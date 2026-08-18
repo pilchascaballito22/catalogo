@@ -5,8 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="description"
-    content="Pilchas Caballito 22 — indumentaria urbana en Buenos Aires.">
+  <meta
+    name="description"
+    content="Pilchas Caballito 22 — indumentaria urbana en Buenos Aires."
+  >
 
   <meta name="theme-color" content="#111111">
 
@@ -17,7 +19,8 @@
 
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+    rel="stylesheet"
+  >
 
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -68,16 +71,39 @@
     </nav>
 
 
-    <a
-      class="header-whatsapp"
-      id="headerWhatsapp"
-      href="#"
-      target="_blank"
-      rel="noopener"
-    >
-      WhatsApp
-      <span>↗</span>
-    </a>
+    <div class="header-actions">
+
+      <a
+        class="header-whatsapp"
+        id="headerWhatsapp"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        WhatsApp
+        <span>↗</span>
+      </a>
+
+
+      <!-- CARRITO -->
+
+      <button
+        class="cart-button"
+        id="cartButton"
+        type="button"
+        aria-label="Abrir carrito"
+      >
+        <span class="cart-icon">🛒</span>
+        <span>Carrito</span>
+        <span
+          class="cart-count"
+          id="cartCount"
+        >
+          0
+        </span>
+      </button>
+
+    </div>
 
 
     <button
@@ -130,6 +156,18 @@
       >
         WhatsApp ↗
       </a>
+
+
+      <button
+        class="mobile-cart-button"
+        id="mobileCartButton"
+        type="button"
+      >
+        🛒 Carrito
+        <span id="mobileCartCount">
+          0
+        </span>
+      </button>
 
     </div>
 
@@ -215,6 +253,7 @@
           <div class="hero-image-wrap">
 
             <div class="hero-image-placeholder">
+
               <div class="hero-placeholder-logo">
                 PC<span>22</span>
               </div>
@@ -223,6 +262,7 @@
                 PILCHAS<br>
                 CABALLITO
               </p>
+
             </div>
 
           </div>
@@ -379,10 +419,13 @@
         class="empty hidden"
         id="emptyProducts"
       >
+
         <span>PC22</span>
+
         <p>
           Todavía no hay productos publicados.
         </p>
+
       </div>
 
     </section>
@@ -474,6 +517,7 @@
               Hablar por WhatsApp
               <span>↗</span>
             </a>
+
 
             <a
               class="btn btn-outline btn-large"
@@ -638,8 +682,20 @@
         ></div>
 
 
+        <!-- AGREGAR AL CARRITO DESDE EL PRODUCTO -->
+
+        <button
+          class="btn btn-green btn-large add-to-cart-modal"
+          id="modalAddToCart"
+          type="button"
+        >
+          Agregar al carrito
+          <span>+</span>
+        </button>
+
+
         <a
-          class="btn btn-green btn-large"
+          class="btn btn-outline btn-large"
           id="modalWhatsapp"
           href="#"
           target="_blank"
@@ -654,6 +710,144 @@
     </div>
 
   </div>
+
+
+  <!-- =====================================================
+       CARRITO
+  ====================================================== -->
+
+  <div
+    class="cart-overlay hidden"
+    id="cartOverlay"
+  ></div>
+
+
+  <aside
+    class="cart-drawer"
+    id="cartDrawer"
+    aria-label="Carrito de compras"
+    aria-hidden="true"
+  >
+
+    <!-- CABECERA -->
+
+    <div class="cart-header">
+
+      <div>
+
+        <p class="section-number">
+          TU PEDIDO
+        </p>
+
+        <h2>
+          Carrito<span>.</span>
+        </h2>
+
+      </div>
+
+
+      <button
+        class="cart-close"
+        id="cartClose"
+        type="button"
+        aria-label="Cerrar carrito"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <!-- CONTENIDO -->
+
+    <div
+      class="cart-content"
+      id="cartContent"
+    >
+
+      <!-- Se llena automáticamente con JavaScript -->
+
+    </div>
+
+
+    <!-- CARRITO VACÍO -->
+
+    <div
+      class="cart-empty"
+      id="cartEmpty"
+    >
+
+      <div class="cart-empty-icon">
+        🛒
+      </div>
+
+      <h3>
+        Tu carrito está vacío.
+      </h3>
+
+      <p>
+        Agregá algunas pilchas
+        para empezar tu pedido.
+      </p>
+
+      <button
+        class="btn btn-green"
+        id="continueShopping"
+        type="button"
+      >
+        Ver colección
+        <span>↗</span>
+      </button>
+
+    </div>
+
+
+    <!-- FOOTER DEL CARRITO -->
+
+    <div
+      class="cart-footer"
+      id="cartFooter"
+    >
+
+      <div class="cart-total-row">
+
+        <span>
+          TOTAL
+        </span>
+
+        <strong id="cartTotal">
+          $0
+        </strong>
+
+      </div>
+
+
+      <p class="cart-note">
+        El pedido se confirma por WhatsApp.
+      </p>
+
+
+      <button
+        class="btn btn-green btn-large cart-checkout"
+        id="checkoutWhatsapp"
+        type="button"
+      >
+        Finalizar por WhatsApp
+        <span>↗</span>
+      </button>
+
+
+      <button
+        class="cart-clear"
+        id="clearCart"
+        type="button"
+      >
+        Vaciar carrito
+      </button>
+
+    </div>
+
+  </aside>
 
 
   <!-- =====================================================
