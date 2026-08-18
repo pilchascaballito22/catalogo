@@ -4,14 +4,17 @@ import { STORE } from "./config.js";
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
-const WHATSAPP_NUMBER = "5491130786998";
-const INSTAGRAM_URL = "https://www.instagram.com/pilchas_caballito22/";
 const CART_KEY = "pc22_cart";
+
+const WHATSAPP_NUMBER = "5491130786998";
+
+const INSTAGRAM_URL =
+  "https://www.instagram.com/pilchas_caballito22/";
 
 const state = {
   products: [],
   category: "Todos",
-  cart: JSON.parse(localStorage.getItem(CART_KEY) || "[]")
+  cart: loadCart()
 };
 
 
@@ -24,9 +27,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupLinks();
   setupMenu();
   setupModal();
-
-  createCartHTML();
   setupCart();
+
   updateCartUI();
 
   if (!supabase) {
@@ -36,6 +38,57 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await loadProducts();
 });
+
+
+// =========================================================
+// LOCALSTORAGE
+// =========================================================
+
+function loadCart() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(CART_KEY);
+
+    if (!saved) return [];
+
+    const parsed =
+      JSON.parse(saved);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+
+  } catch (error) {
+
+    console.error(
+      "Error cargando carrito:",
+      error
+    );
+
+    return [];
+  }
+}
+
+
+function saveCart() {
+
+  try {
+
+    localStorage.setItem(
+      CART_KEY,
+      JSON.stringify(state.cart)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error guardando carrito:",
+      error
+    );
+  }
+}
 
 
 // =========================================================
@@ -56,12 +109,15 @@ function setupLinks() {
     "contactWhatsapp"
   ].forEach((id) => {
 
-    const element = document.getElementById(id);
+    const element =
+      document.getElementById(id);
 
     if (!element) return;
 
     element.href =
-      `${whatsappURL}?text=${encodeURIComponent(whatsappMessage)}`;
+      `${whatsappURL}?text=${encodeURIComponent(
+        whatsappMessage
+      )}`;
 
   });
 
@@ -72,14 +128,15 @@ function setupLinks() {
     "heroInstagram"
   ].forEach((id) => {
 
-    const element = document.getElementById(id);
+    const element =
+      document.getElementById(id);
 
     if (!element) return;
 
-    element.href = INSTAGRAM_URL;
+    element.href =
+      INSTAGRAM_URL;
 
   });
-
 }
 
 
@@ -89,44 +146,81 @@ function setupLinks() {
 
 function setupMenu() {
 
-  const btn = $("#menuBtn");
-  const menu = $("#mobileMenu");
+  const button =
+    $("#menuBtn");
 
-  if (!btn || !menu) return;
+  const menu =
+    $("#mobileMenu");
 
-  btn.addEventListener("click", () => {
-
-    const isOpen =
-      menu.classList.toggle("open");
-
-    btn.setAttribute(
-      "aria-expanded",
-      isOpen ? "true" : "false"
-    );
-
-  });
+  if (!button || !menu) return;
 
 
-  $$("#mobileMenu a").forEach((link) => {
+  button.addEventListener(
+    "click",
+    () => {
 
-    link.addEventListener("click", () => {
+      const isOpen =
+        menu.classList.toggle("open");
 
-      menu.classList.remove("open");
+      button.setAttribute(
+        "aria-expanded",
+        isOpen ? "true" : "false"
+      );
 
-      btn.setAttribute(
+    }
+  );
+
+
+  $$("#mobileMenu a").forEach(
+    (link) => {
+
+      link.addEventListener(
+        "click",
+        () => {
+
+          menu.classList.remove(
+            "open"
+          );
+
+          button.setAttribute(
+            "aria-expanded",
+            "false"
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  // Carrito desde el menú mobile
+
+  const mobileCart =
+    $("#mobileCartButton");
+
+  mobileCart?.addEventListener(
+    "click",
+    () => {
+
+      menu.classList.remove(
+        "open"
+      );
+
+      button.setAttribute(
         "aria-expanded",
         "false"
       );
 
-    });
+      openCart();
 
-  });
-
+    }
+  );
 }
 
 
 // =========================================================
-// PRODUCTOS
+// SUPABASE
 // =========================================================
 
 async function loadProducts() {
@@ -155,11 +249,11 @@ async function loadProducts() {
   }
 
 
-  state.products = data || [];
+  state.products =
+    data || [];
 
   renderFilters();
   renderProducts();
-
 }
 
 
@@ -173,62 +267,77 @@ function renderFilters() {
     "Todos",
     ...new Set(
       state.products
-        .map((product) => product.category)
+        .map(
+          (product) =>
+            product.category
+        )
         .filter(Boolean)
     )
   ];
 
 
-  const box = $("#filters");
+  const box =
+    $("#filters");
 
   if (!box) return;
 
 
   box.innerHTML =
     categories
-      .map((category) => `
+      .map(
+        (category) => `
 
-        <button
-          class="filter ${
-            category === state.category
-              ? "active"
-              : ""
-          }"
-          data-category="${escapeAttr(category)}"
-          type="button"
-        >
-          ${escapeHtml(category)}
-        </button>
+          <button
+            class="filter ${
+              category === state.category
+                ? "active"
+                : ""
+            }"
+            data-category="${escapeAttr(
+              category
+            )}"
+            type="button"
+          >
+            ${escapeHtml(category)}
+          </button>
 
-      `)
+        `
+      )
       .join("");
 
 
-  $$(".filter").forEach((button) => {
+  $$("#filters .filter").forEach(
+    (button) => {
 
-    button.addEventListener("click", () => {
+      button.addEventListener(
+        "click",
+        () => {
 
-      state.category =
-        button.dataset.category;
+          state.category =
+            button.dataset.category;
 
-      renderFilters();
-      renderProducts();
+          renderFilters();
+          renderProducts();
 
-    });
+        }
+      );
 
-  });
-
+    }
+  );
 }
 
 
 // =========================================================
-// MOSTRAR PRODUCTOS
+// PRODUCTOS
 // =========================================================
 
 function renderProducts() {
 
-  const grid = $("#productGrid");
-  const empty = $("#emptyProducts");
+  const grid =
+    $("#productGrid");
+
+  const empty =
+    $("#emptyProducts");
 
   if (!grid || !empty) return;
 
@@ -238,7 +347,8 @@ function renderProducts() {
       ? state.products
       : state.products.filter(
           (product) =>
-            product.category === state.category
+            product.category ===
+            state.category
         );
 
 
@@ -246,14 +356,17 @@ function renderProducts() {
 
     grid.innerHTML = "";
 
-    empty.classList.remove("hidden");
+    empty.classList.remove(
+      "hidden"
+    );
 
     return;
-
   }
 
 
-  empty.classList.add("hidden");
+  empty.classList.add(
+    "hidden"
+  );
 
 
   grid.innerHTML =
@@ -262,16 +375,21 @@ function renderProducts() {
       .join("");
 
 
-  $$(".product-card").forEach((card) => {
+  $$("#productGrid .product-card")
+    .forEach((card) => {
 
-    card.addEventListener("click", () => {
+      card.addEventListener(
+        "click",
+        () => {
 
-      openProduct(card.dataset.id);
+          openProduct(
+            card.dataset.id
+          );
+
+        }
+      );
 
     });
-
-  });
-
 }
 
 
@@ -289,7 +407,9 @@ function productCard(product) {
 
     <article
       class="product-card"
-      data-id="${escapeAttr(product.id)}"
+      data-id="${escapeAttr(
+        product.id
+      )}"
     >
 
       <div class="product-card-image">
@@ -299,7 +419,9 @@ function productCard(product) {
             ? `
               <img
                 src="${escapeAttr(image)}"
-                alt="${escapeAttr(product.name)}"
+                alt="${escapeAttr(
+                  product.name
+                )}"
                 loading="lazy"
               >
             `
@@ -309,7 +431,6 @@ function productCard(product) {
               </div>
             `
         }
-
 
         ${
           product.featured
@@ -335,12 +456,16 @@ function productCard(product) {
 
 
         <h3 class="product-card-name">
-          ${escapeHtml(product.name)}
+          ${escapeHtml(
+            product.name
+          )}
         </h3>
 
 
         <div class="product-card-price">
-          ${formatPrice(product.price)}
+          ${formatPrice(
+            product.price
+          )}
         </div>
 
       </div>
@@ -348,12 +473,11 @@ function productCard(product) {
     </article>
 
   `;
-
 }
 
 
 // =========================================================
-// ABRIR PRODUCTO
+// PRODUCTO MODAL
 // =========================================================
 
 function openProduct(id) {
@@ -361,58 +485,105 @@ function openProduct(id) {
   const product =
     state.products.find(
       (item) =>
-        String(item.id) === String(id)
+        String(item.id) ===
+        String(id)
     );
 
 
   if (!product) return;
 
 
-  $("#modalCategory").textContent =
-    product.category || "INDUMENTARIA";
+  const category =
+    $("#modalCategory");
+
+  const name =
+    $("#modalName");
+
+  const price =
+    $("#modalPrice");
+
+  const description =
+    $("#modalDescription");
+
+  const sizes =
+    $("#modalSizes");
+
+  const image =
+    $("#modalImage");
+
+  const thumbs =
+    $("#modalThumbs");
+
+  const whatsapp =
+    $("#modalWhatsapp");
+
+  const addButton =
+    $("#modalAddToCart");
 
 
-  $("#modalName").textContent =
-    product.name;
+  if (category) {
 
-
-  $("#modalPrice").textContent =
-    formatPrice(product.price);
-
-
-  $("#modalDescription").textContent =
-    product.description ||
-    "Consultá disponibilidad y talles por WhatsApp.";
-
-
-  $("#modalSizes").innerHTML =
-    (product.sizes || [])
-      .map(
-        (size) => `
-          <span>
-            ${escapeHtml(size)}
-          </span>
-        `
-      )
-      .join("");
-
-
-  const mainImage = $("#modalImage");
-  const images = product.images || [];
-
-
-  if (mainImage) {
-
-    mainImage.src =
-      images[0] || "";
-
-    mainImage.alt =
-      product.name;
-
+    category.textContent =
+      product.category ||
+      "INDUMENTARIA";
   }
 
 
-  const thumbs = $("#modalThumbs");
+  if (name) {
+
+    name.textContent =
+      product.name;
+  }
+
+
+  if (price) {
+
+    price.textContent =
+      formatPrice(
+        product.price
+      );
+  }
+
+
+  if (description) {
+
+    description.textContent =
+      product.description ||
+      "Consultá disponibilidad y talles por WhatsApp.";
+  }
+
+
+  // Talles
+
+  if (sizes) {
+
+    sizes.innerHTML =
+      (product.sizes || [])
+        .map(
+          (size) => `
+            <span>
+              ${escapeHtml(size)}
+            </span>
+          `
+        )
+        .join("");
+  }
+
+
+  // Imágenes
+
+  const images =
+    product.images || [];
+
+
+  if (image) {
+
+    image.src =
+      images[0] || "";
+
+    image.alt =
+      product.name;
+  }
 
 
   if (thumbs) {
@@ -421,6 +592,7 @@ function openProduct(id) {
       images
         .map(
           (src, index) => `
+
             <img
               src="${escapeAttr(src)}"
               alt=""
@@ -431,142 +603,90 @@ function openProduct(id) {
                   : ""
               }"
             >
+
           `
         )
         .join("");
 
 
-    $$("#modalThumbs img").forEach((thumb) => {
+    $$("#modalThumbs img")
+      .forEach((thumb) => {
 
-      thumb.addEventListener("click", () => {
+        thumb.addEventListener(
+          "click",
+          () => {
 
-        if (mainImage) {
+            if (image) {
 
-          mainImage.src =
-            thumb.dataset.src;
-
-        }
-
-
-        $$("#modalThumbs img")
-          .forEach((image) => {
-
-            image.classList.remove("selected");
-
-          });
+              image.src =
+                thumb.dataset.src;
+            }
 
 
-        thumb.classList.add("selected");
+            $$("#modalThumbs img")
+              .forEach(
+                (img) =>
+                  img.classList.remove(
+                    "selected"
+                  )
+              );
+
+
+            thumb.classList.add(
+              "selected"
+            );
+
+          }
+        );
 
       });
-
-    });
-
   }
 
 
-  // =======================================================
-  // WHATSAPP DEL PRODUCTO
-  // =======================================================
+  // WhatsApp
 
-  const productMessage =
+  const message =
     `Hola! Quería consultar por "${product.name}".`;
 
-  const modalWhatsapp =
-    $("#modalWhatsapp");
 
+  if (whatsapp) {
 
-  if (modalWhatsapp) {
-
-    modalWhatsapp.href =
+    whatsapp.href =
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        productMessage
+        message
       )}`;
-
   }
 
 
-  // =======================================================
-  // BOTÓN ÚNICO DE CARRITO
-  // =======================================================
+  // BOTÓN EXISTENTE DEL HTML
+  // No creamos otro botón.
 
-  addCartButtonToModal(product);
+  if (addButton) {
 
+    addButton.onclick =
+      (event) => {
 
-  $("#productModal")
-    ?.classList
-    .remove("hidden");
+        event.preventDefault();
+        event.stopPropagation();
 
+        addToCart(product);
 
-  document.body.style.overflow =
-    "hidden";
-
-}
-
-
-// =========================================================
-// BOTÓN CARRITO DEL MODAL
-// =========================================================
-
-function addCartButtonToModal(product) {
-
-  const modalInfo =
-    document.querySelector(".modal-info");
-
-  if (!modalInfo) return;
+      };
+  }
 
 
-  // -------------------------------------------------------
-  // BORRAR TODOS LOS BOTONES DE CARRITO ANTERIORES
-  // -------------------------------------------------------
+  const modal =
+    $("#productModal");
 
-  modalInfo
-    .querySelectorAll(
-      "#addToCartBtn, .modal-add-cart"
-    )
-    .forEach((button) => {
+  if (modal) {
 
-      button.remove();
+    modal.classList.remove(
+      "hidden"
+    );
 
-    });
-
-
-  // -------------------------------------------------------
-  // CREAR UN SOLO BOTÓN
-  // -------------------------------------------------------
-
-  const button =
-    document.createElement("button");
-
-  button.id =
-    "addToCartBtn";
-
-  button.className =
-    "btn btn-green btn-large modal-add-cart";
-
-  button.type =
-    "button";
-
-  button.textContent =
-    "AGREGAR AL CARRITO +";
-
-
-  button.addEventListener("click", (event) => {
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    addToCart(product);
-
-  });
-
-
-  // -------------------------------------------------------
-  // PONER EL BOTÓN AL FINAL DEL MODAL
-  // -------------------------------------------------------
-
-  modalInfo.appendChild(button);
-
+    document.body.style.overflow =
+      "hidden";
+  }
 }
 
 
@@ -587,18 +707,20 @@ function setupModal() {
     });
 
 
-  document.addEventListener("keydown", (event) => {
+  document.addEventListener(
+    "keydown",
+    (event) => {
 
-    if (event.key === "Escape") {
+      if (
+        event.key === "Escape"
+      ) {
 
-      closeModal();
+        closeModal();
 
-      closeCart();
+      }
 
     }
-
-  });
-
+  );
 }
 
 
@@ -610,166 +732,18 @@ function closeModal() {
   if (!modal) return;
 
 
-  modal.classList.add("hidden");
-
-  document.body.style.overflow = "";
-
-}
-
-
-// =========================================================
-// CARRITO — CREAR HTML
-// =========================================================
-
-function createCartHTML() {
-
-  // Evita duplicarlo
-  if ($("#cartContainer")) return;
-
-
-  const cartHTML = `
-
-    <button
-      id="cartButton"
-      class="cart-button"
-      type="button"
-      aria-label="Abrir carrito"
-    >
-
-      <span class="cart-icon">
-        🛒
-      </span>
-
-      <span>
-        Carrito
-      </span>
-
-      <strong id="cartCount">
-        0
-      </strong>
-
-    </button>
-
-
-    <div
-      id="cartContainer"
-      class="cart-container hidden"
-    >
-
-      <div
-        id="cartOverlay"
-        class="cart-overlay"
-      ></div>
-
-
-      <aside
-        class="cart-panel"
-        aria-label="Carrito de compras"
-      >
-
-        <div class="cart-header">
-
-          <div>
-
-            <p class="cart-label">
-              PC22 / SHOP
-            </p>
-
-            <h2>
-              Tu carrito.
-            </h2>
-
-          </div>
-
-
-          <button
-            id="cartClose"
-            class="cart-close"
-            type="button"
-            aria-label="Cerrar carrito"
-          >
-            ×
-          </button>
-
-        </div>
-
-
-        <div
-          id="cartItems"
-          class="cart-items"
-        ></div>
-
-
-        <div
-          id="cartEmpty"
-          class="cart-empty"
-        >
-
-          <strong>
-            TU CARRITO ESTÁ VACÍO
-          </strong>
-
-          <p>
-            Agregá productos de la colección.
-          </p>
-
-        </div>
-
-
-        <div
-          id="cartFooter"
-          class="cart-footer"
-        >
-
-          <div class="cart-total">
-
-            <span>
-              TOTAL
-            </span>
-
-            <strong id="cartTotal">
-              $0
-            </strong>
-
-          </div>
-
-
-          <button
-            id="checkoutWhatsapp"
-            class="btn btn-green btn-large cart-checkout"
-            type="button"
-          >
-            FINALIZAR POR WHATSAPP ↗
-          </button>
-
-
-          <button
-            id="clearCart"
-            class="cart-clear"
-            type="button"
-          >
-            Vaciar carrito
-          </button>
-
-        </div>
-
-      </aside>
-
-    </div>
-
-  `;
-
-
-  document.body.insertAdjacentHTML(
-    "beforeend",
-    cartHTML
+  modal.classList.add(
+    "hidden"
   );
 
+
+  document.body.style.overflow =
+    "";
 }
 
 
 // =========================================================
-// CONFIGURAR CARRITO
+// CARRITO
 // =========================================================
 
 function setupCart() {
@@ -783,6 +757,9 @@ function setupCart() {
   const cartOverlay =
     $("#cartOverlay");
 
+  const continueShopping =
+    $("#continueShopping");
+
   const checkout =
     $("#checkoutWhatsapp");
 
@@ -790,11 +767,15 @@ function setupCart() {
     $("#clearCart");
 
 
+  // BOTÓN DEL HEADER
+
   cartButton?.addEventListener(
     "click",
     openCart
   );
 
+
+  // CERRAR
 
   cartClose?.addEventListener(
     "click",
@@ -808,17 +789,143 @@ function setupCart() {
   );
 
 
+  // SEGUIR COMPRANDO
+
+  continueShopping?.addEventListener(
+    "click",
+    () => {
+
+      closeCart();
+
+      setTimeout(() => {
+
+        $("#coleccion")
+          ?.scrollIntoView({
+            behavior: "smooth"
+          });
+
+      }, 100);
+
+    }
+  );
+
+
+  // WHATSAPP
+
   checkout?.addEventListener(
     "click",
     checkoutWhatsApp
   );
 
 
+  // VACIAR
+
   clear?.addEventListener(
     "click",
     clearCart
   );
 
+
+  // ESC
+
+  document.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key === "Escape"
+      ) {
+
+        closeCart();
+
+      }
+
+    }
+  );
+}
+
+
+// =========================================================
+// ABRIR CARRITO
+// =========================================================
+
+function openCart() {
+
+  const drawer =
+    $("#cartDrawer");
+
+  const overlay =
+    $("#cartOverlay");
+
+  if (!drawer || !overlay) {
+    return;
+  }
+
+
+  // Si está abierto el producto,
+  // lo cerramos primero.
+
+  closeModal();
+
+
+  // IMPORTANTE:
+  // usamos las clases del HTML existente.
+  // NO creamos otro carrito.
+
+  drawer.classList.add(
+    "open"
+  );
+
+  overlay.classList.remove(
+    "hidden"
+  );
+
+
+  drawer.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+
+  document.body.style.overflow =
+    "hidden";
+}
+
+
+// =========================================================
+// CERRAR CARRITO
+// =========================================================
+
+function closeCart() {
+
+  const drawer =
+    $("#cartDrawer");
+
+  const overlay =
+    $("#cartOverlay");
+
+  if (!drawer || !overlay) {
+    return;
+  }
+
+
+  drawer.classList.remove(
+    "open"
+  );
+
+  overlay.classList.add(
+    "hidden"
+  );
+
+
+  drawer.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+
+  document.body.style.overflow =
+    "";
 }
 
 
@@ -827,6 +934,9 @@ function setupCart() {
 // =========================================================
 
 function addToCart(product) {
+
+  if (!product) return;
+
 
   const existing =
     state.cart.find(
@@ -867,10 +977,10 @@ function addToCart(product) {
   saveCart();
   updateCartUI();
 
+
   showToast(
     `${product.name} agregado al carrito.`
   );
-
 }
 
 
@@ -878,7 +988,10 @@ function addToCart(product) {
 // CAMBIAR CANTIDAD
 // =========================================================
 
-function changeQuantity(id, amount) {
+function changeQuantity(
+  id,
+  amount
+) {
 
   const item =
     state.cart.find(
@@ -894,7 +1007,9 @@ function changeQuantity(id, amount) {
   item.quantity += amount;
 
 
-  if (item.quantity <= 0) {
+  if (
+    item.quantity <= 0
+  ) {
 
     state.cart =
       state.cart.filter(
@@ -908,7 +1023,6 @@ function changeQuantity(id, amount) {
 
   saveCart();
   updateCartUI();
-
 }
 
 
@@ -928,7 +1042,6 @@ function removeFromCart(id) {
 
   saveCart();
   updateCartUI();
-
 }
 
 
@@ -938,7 +1051,9 @@ function removeFromCart(id) {
 
 function clearCart() {
 
-  if (!state.cart.length) return;
+  if (!state.cart.length) {
+    return;
+  }
 
 
   state.cart = [];
@@ -946,24 +1061,10 @@ function clearCart() {
   saveCart();
   updateCartUI();
 
+
   showToast(
     "Carrito vacío."
   );
-
-}
-
-
-// =========================================================
-// GUARDAR
-// =========================================================
-
-function saveCart() {
-
-  localStorage.setItem(
-    CART_KEY,
-    JSON.stringify(state.cart)
-  );
-
 }
 
 
@@ -973,8 +1074,8 @@ function saveCart() {
 
 function updateCartUI() {
 
-  const itemsContainer =
-    $("#cartItems");
+  const content =
+    $("#cartContent");
 
   const empty =
     $("#cartEmpty");
@@ -982,17 +1083,21 @@ function updateCartUI() {
   const footer =
     $("#cartFooter");
 
+  const totalElement =
+    $("#cartTotal");
+
   const count =
     $("#cartCount");
 
-  const totalElement =
-    $("#cartTotal");
+  const mobileCount =
+    $("#mobileCartCount");
 
 
   const totalQuantity =
     state.cart.reduce(
       (total, item) =>
-        total + Number(item.quantity || 0),
+        total +
+        Number(item.quantity || 0),
       0
     );
 
@@ -1001,50 +1106,78 @@ function updateCartUI() {
     state.cart.reduce(
       (total, item) =>
         total +
-        Number(item.price || 0) *
-        Number(item.quantity || 0),
+        (
+          Number(item.price) || 0
+        ) *
+        Number(
+          item.quantity || 0
+        ),
       0
     );
 
+
+  // Contador header
 
   if (count) {
 
     count.textContent =
       totalQuantity;
-
   }
 
+
+  // Contador mobile
+
+  if (mobileCount) {
+
+    mobileCount.textContent =
+      totalQuantity;
+  }
+
+
+  // Total
 
   if (totalElement) {
 
     totalElement.textContent =
-      formatPrice(totalPrice);
-
+      formatPrice(
+        totalPrice
+      );
   }
 
 
-  if (!itemsContainer) return;
+  if (!content) return;
 
+
+  // CARRITO VACÍO
 
   if (!state.cart.length) {
 
-    itemsContainer.innerHTML = "";
+    content.innerHTML = "";
 
-    empty?.classList.remove("hidden");
+    empty?.classList.remove(
+      "hidden"
+    );
 
-    footer?.classList.add("hidden");
+    footer?.classList.add(
+      "hidden"
+    );
 
     return;
-
   }
 
 
-  empty?.classList.add("hidden");
+  // CARRITO CON PRODUCTOS
 
-  footer?.classList.remove("hidden");
+  empty?.classList.add(
+    "hidden"
+  );
+
+  footer?.classList.remove(
+    "hidden"
+  );
 
 
-  itemsContainer.innerHTML =
+  content.innerHTML =
     state.cart
       .map(cartItemHTML)
       .join("");
@@ -1052,69 +1185,86 @@ function updateCartUI() {
 
   // MENOS
 
-  $$(".cart-minus").forEach((button) => {
+  $$("#cartContent .cart-minus")
+    .forEach((button) => {
 
-    button.addEventListener("click", () => {
+      button.addEventListener(
+        "click",
+        () => {
 
-      changeQuantity(
-        button.dataset.id,
-        -1
+          changeQuantity(
+            button.dataset.id,
+            -1
+          );
+
+        }
       );
 
     });
-
-  });
 
 
   // MÁS
 
-  $$(".cart-plus").forEach((button) => {
+  $$("#cartContent .cart-plus")
+    .forEach((button) => {
 
-    button.addEventListener("click", () => {
+      button.addEventListener(
+        "click",
+        () => {
 
-      changeQuantity(
-        button.dataset.id,
-        1
+          changeQuantity(
+            button.dataset.id,
+            1
+          );
+
+        }
       );
 
     });
-
-  });
 
 
   // ELIMINAR
 
-  $$(".cart-remove").forEach((button) => {
+  $$("#cartContent .cart-remove")
+    .forEach((button) => {
 
-    button.addEventListener("click", () => {
+      button.addEventListener(
+        "click",
+        () => {
 
-      removeFromCart(
-        button.dataset.id
+          removeFromCart(
+            button.dataset.id
+          );
+
+        }
       );
 
     });
-
-  });
-
 }
 
 
 // =========================================================
-// PRODUCTO DEL CARRITO
+// ITEM DEL CARRITO
 // =========================================================
 
 function cartItemHTML(item) {
 
   const subtotal =
-    Number(item.price || 0) *
-    Number(item.quantity || 0);
+    (
+      Number(item.price) || 0
+    ) *
+    Number(
+      item.quantity || 0
+    );
 
 
   return `
 
-    <div
+    <article
       class="cart-item"
-      data-id="${escapeAttr(item.id)}"
+      data-id="${escapeAttr(
+        item.id
+      )}"
     >
 
       <div class="cart-item-image">
@@ -1123,8 +1273,12 @@ function cartItemHTML(item) {
           item.image
             ? `
               <img
-                src="${escapeAttr(item.image)}"
-                alt="${escapeAttr(item.name)}"
+                src="${escapeAttr(
+                  item.image
+                )}"
+                alt="${escapeAttr(
+                  item.name
+                )}"
               >
             `
             : `
@@ -1140,11 +1294,16 @@ function cartItemHTML(item) {
       <div class="cart-item-info">
 
         <h3>
-          ${escapeHtml(item.name)}
+          ${escapeHtml(
+            item.name
+          )}
         </h3>
 
+
         <p>
-          ${formatPrice(subtotal)}
+          ${formatPrice(
+            item.price
+          )}
         </p>
 
 
@@ -1154,20 +1313,28 @@ function cartItemHTML(item) {
 
             <button
               class="cart-minus"
-              data-id="${escapeAttr(item.id)}"
+              data-id="${escapeAttr(
+                item.id
+              )}"
               type="button"
+              aria-label="Disminuir cantidad"
             >
               −
             </button>
+
 
             <span>
               ${item.quantity}
             </span>
 
+
             <button
               class="cart-plus"
-              data-id="${escapeAttr(item.id)}"
+              data-id="${escapeAttr(
+                item.id
+              )}"
               type="button"
+              aria-label="Aumentar cantidad"
             >
               +
             </button>
@@ -1177,7 +1344,9 @@ function cartItemHTML(item) {
 
           <button
             class="cart-remove"
-            data-id="${escapeAttr(item.id)}"
+            data-id="${escapeAttr(
+              item.id
+            )}"
             type="button"
           >
             Eliminar
@@ -1185,69 +1354,23 @@ function cartItemHTML(item) {
 
         </div>
 
+
+        <strong class="cart-item-subtotal">
+          ${formatPrice(
+            subtotal
+          )}
+        </strong>
+
       </div>
 
-    </div>
+    </article>
 
   `;
-
 }
 
 
 // =========================================================
-// ABRIR CARRITO
-// =========================================================
-
-function openCart() {
-
-  const container =
-    $("#cartContainer");
-
-  if (!container) return;
-
-
-  // Si el modal de producto está abierto,
-  // lo cerramos primero.
-
-  closeModal();
-
-
-  container.classList.remove(
-    "hidden"
-  );
-
-
-  document.body.style.overflow =
-    "hidden";
-
-}
-
-
-// =========================================================
-// CERRAR CARRITO
-// =========================================================
-
-function closeCart() {
-
-  const container =
-    $("#cartContainer");
-
-  if (!container) return;
-
-
-  container.classList.add(
-    "hidden"
-  );
-
-
-  document.body.style.overflow =
-    "";
-
-}
-
-
-// =========================================================
-// FINALIZAR POR WHATSAPP
+// WHATSAPP CHECKOUT
 // =========================================================
 
 function checkoutWhatsApp() {
@@ -1259,51 +1382,54 @@ function checkoutWhatsApp() {
     );
 
     return;
-
   }
 
 
   const lines =
-    state.cart.map((item) => {
+    state.cart.map(
+      (item) => {
 
-      const subtotal =
-        Number(item.price || 0) *
-        Number(item.quantity || 0);
+        const subtotal =
+          (
+            Number(item.price) || 0
+          ) *
+          Number(
+            item.quantity || 0
+          );
 
 
-      return (
-        `• ${item.name} x${item.quantity} — ${formatPrice(subtotal)}`
-      );
+        return (
+          `• ${item.name} x${item.quantity} — ${formatPrice(
+            subtotal
+          )}`
+        );
 
-    });
+      }
+    );
 
 
   const total =
     state.cart.reduce(
       (sum, item) =>
         sum +
-        Number(item.price || 0) *
-        Number(item.quantity || 0),
+        (
+          Number(item.price) || 0
+        ) *
+        Number(
+          item.quantity || 0
+        ),
       0
     );
 
 
   const message = [
-
     "Hola! Quiero hacer un pedido en Pilchas Caballito 22.",
-
     "",
-
     ...lines,
-
     "",
-
     `TOTAL: ${formatPrice(total)}`,
-
     "",
-
     "¿Me confirman disponibilidad y cómo coordinamos la entrega?"
-
   ].join("\n");
 
 
@@ -1318,7 +1444,6 @@ function checkoutWhatsApp() {
     "_blank",
     "noopener,noreferrer"
   );
-
 }
 
 
@@ -1332,38 +1457,79 @@ function showDemo() {
 
     {
       id: "demo1",
-      name: "Remera Oversize",
-      category: "Remeras",
-      price: 35000,
+
+      name:
+        "Remera Oversize",
+
+      category:
+        "Remeras",
+
+      price:
+        35000,
+
       description:
-        "Producto de ejemplo.",
-      sizes: ["S", "M", "L", "XL"],
-      images: [],
-      featured: true
+        "Producto de ejemplo. Configurá Supabase para administrar el catálogo.",
+
+      sizes:
+        ["S", "M", "L", "XL"],
+
+      images:
+        [],
+
+      featured:
+        true
     },
+
 
     {
       id: "demo2",
-      name: "Buzo PC22",
-      category: "Buzos",
-      price: 55000,
+
+      name:
+        "Buzo PC22",
+
+      category:
+        "Buzos",
+
+      price:
+        55000,
+
       description:
         "Producto de ejemplo.",
-      sizes: ["M", "L", "XL"],
-      images: [],
-      featured: false
+
+      sizes:
+        ["M", "L", "XL"],
+
+      images:
+        [],
+
+      featured:
+        false
     },
+
 
     {
       id: "demo3",
-      name: "Campera Urbana",
-      category: "Camperas",
-      price: 80000,
+
+      name:
+        "Campera Urbana",
+
+      category:
+        "Camperas",
+
+      price:
+        80000,
+
       description:
         "Producto de ejemplo.",
-      sizes: ["S", "M", "L"],
-      images: [],
-      featured: false
+
+      sizes:
+        ["S", "M", "L"],
+
+      images:
+        [],
+
+      featured:
+        false
     }
 
   ];
@@ -1371,7 +1537,6 @@ function showDemo() {
 
   renderFilters();
   renderProducts();
-
 }
 
 
@@ -1388,7 +1553,6 @@ function formatPrice(value) {
   ) {
 
     return "Consultar precio";
-
   }
 
 
@@ -1402,7 +1566,6 @@ function formatPrice(value) {
   ).format(
     Number(value)
   );
-
 }
 
 
@@ -1427,14 +1590,12 @@ function escapeHtml(value = "") {
 
       }
     );
-
 }
 
 
 function escapeAttr(value = "") {
 
   return escapeHtml(value);
-
 }
 
 
@@ -1459,12 +1620,14 @@ function showToast(message) {
   );
 
 
-  setTimeout(() => {
+  setTimeout(
+    () => {
 
-    toast.classList.remove(
-      "show"
-    );
+      toast.classList.remove(
+        "show"
+      );
 
-  }, 2500);
-
+    },
+    2500
+  );
 }
