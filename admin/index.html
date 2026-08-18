@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Admin · PC22</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+  <div id="authView" class="auth-view">
+    <div class="auth-card">
+      <div class="admin-logo">PC<span>22</span></div>
+      <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+      <h1>Entrar.</h1>
+      <form id="loginForm">
+        <label>Email<input type="email" id="email" required autocomplete="email"></label>
+        <label>Contraseña<input type="password" id="password" required autocomplete="current-password"></label>
+        <button class="primary" type="submit">Ingresar →</button>
+      </form>
+      <p id="loginError" class="error"></p>
+      <a class="back-link" href="../">← Volver a la página</a>
+    </div>
+  </div>
+
+  <div id="appView" class="admin-app hidden">
+    <aside class="sidebar">
+      <a href="../" class="admin-logo">PC<span>22</span></a>
+      <p class="sidebar-label">ADMIN</p>
+      <nav>
+        <a class="active" href="#productos">Productos</a>
+        <a href="../" target="_blank">Ver página ↗</a>
+      </nav>
+      <button id="logoutBtn" class="logout">Cerrar sesión</button>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">PANEL / 01</p>
+          <h1>Productos.</h1>
+        </div>
+        <button id="newProductBtn" class="primary">+ Nuevo producto</button>
+      </header>
+
+      <section class="stats">
+        <div><strong id="totalProducts">0</strong><span>Productos</span></div>
+        <div><strong id="activeProducts">0</strong><span>Publicados</span></div>
+        <div><strong id="featuredProducts">0</strong><span>Destacados</span></div>
+      </section>
+
+      <section id="productsSection">
+        <div class="section-title">
+          <h2>Catálogo</h2>
+          <input id="searchProducts" placeholder="Buscar producto...">
+        </div>
+        <div id="adminProducts" class="admin-products"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="editorModal" class="editor-modal hidden">
+    <div class="editor-backdrop" data-close-editor></div>
+    <div class="editor-card">
+      <button class="close" data-close-editor>×</button>
+      <div class="editor-head">
+        <p class="eyebrow">PRODUCTO</p>
+        <h2 id="editorTitle">Nuevo producto.</h2>
+      </div>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-grid">
+          <label>Nombre<input id="productName" required maxlength="100"></label>
+          <label>Precio<input id="productPrice" type="number" min="0" step="1" placeholder="35000"></label>
+          <label>Categoría<input id="productCategory" required maxlength="50" placeholder="Remeras"></label>
+          <label>Orden / destacado
+            <select id="productFeatured">
+              <option value="false">Normal</option>
+              <option value="true">Destacado</option>
+            </select>
+          </label>
+        </div>
+        <label>Descripción<textarea id="productDescription" rows="4" maxlength="1000"></textarea></label>
+        <label>Talles <span class="hint">Separados por coma</span><input id="productSizes" placeholder="S, M, L, XL"></label>
+        <div>
+          <div class="upload-head"><span>Fotos</span><span id="photoCount">0 fotos</span></div>
+          <input id="productImages" type="file" accept="image/*" multiple>
+          <div id="previewImages" class="preview-images"></div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="secondary" data-close-editor>Cancelar</button>
+          <button type="submit" class="primary" id="saveProductBtn">Guardar producto</button>
+        </div>
+        <p id="formError" class="error"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="../js/admin.js"></script>
+</body>
+</html>
