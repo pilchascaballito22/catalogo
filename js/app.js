@@ -189,8 +189,7 @@ function renderFilters() {
 
   $$("#filters .filter").forEach((button) => {
     button.addEventListener("click", () => {
-      state.category =
-        button.dataset.category;
+      state.category = button.dataset.category;
 
       renderFilters();
       renderProducts();
@@ -213,8 +212,7 @@ function renderProducts() {
       ? state.products
       : state.products.filter(
           (product) =>
-            product.category ===
-            state.category
+            product.category === state.category
         );
 
   if (!products.length) {
@@ -227,10 +225,9 @@ function renderProducts() {
 
   empty.classList.add("hidden");
 
-  grid.innerHTML =
-    products
-      .map(productCard)
-      .join("");
+  grid.innerHTML = products
+    .map(productCard)
+    .join("");
 
   $$("#productGrid .product-card").forEach(
     (card) => {
@@ -322,32 +319,15 @@ function openProduct(id) {
 
   if (!product) return;
 
-  const category =
-    $("#modalCategory");
-
-  const name =
-    $("#modalName");
-
-  const price =
-    $("#modalPrice");
-
-  const description =
-    $("#modalDescription");
-
-  const sizes =
-    $("#modalSizes");
-
-  const image =
-    $("#modalImage");
-
-  const thumbs =
-    $("#modalThumbs");
-
-  const whatsapp =
-    $("#modalWhatsapp");
-
-  const addButton =
-    $("#modalAddToCart");
+  const category = $("#modalCategory");
+  const name = $("#modalName");
+  const price = $("#modalPrice");
+  const description = $("#modalDescription");
+  const sizes = $("#modalSizes");
+  const image = $("#modalImage");
+  const thumbs = $("#modalThumbs");
+  const whatsapp = $("#modalWhatsapp");
+  const addButton = $("#modalAddToCart");
 
   if (category) {
     category.textContent =
@@ -357,7 +337,7 @@ function openProduct(id) {
 
   if (name) {
     name.textContent =
-      product.name;
+      product.name || "";
   }
 
   if (price) {
@@ -385,14 +365,16 @@ function openProduct(id) {
   }
 
   const images =
-    product.images || [];
+    Array.isArray(product.images)
+      ? product.images
+      : [];
 
   if (image) {
     image.src =
       images[0] || "";
 
     image.alt =
-      product.name;
+      product.name || "";
   }
 
   if (thumbs) {
@@ -440,7 +422,9 @@ function openProduct(id) {
     );
   }
 
-  // WhatsApp del producto
+  // =======================================================
+  // WHATSAPP DEL PRODUCTO
+  // =======================================================
 
   if (whatsapp) {
     const message =
@@ -452,8 +436,9 @@ function openProduct(id) {
       )}`;
   }
 
-  // BOTÓN DEL HTML
-  // No creamos otro botón.
+  // =======================================================
+  // AGREGAR AL CARRITO
+  // =======================================================
 
   if (addButton) {
     addButton.onclick = (event) => {
@@ -513,8 +498,7 @@ function closeModal() {
       "aria-hidden"
     ) !== "false"
   ) {
-    document.body.style.overflow =
-      "";
+    document.body.style.overflow = "";
   }
 }
 
@@ -544,7 +528,7 @@ function setupCart() {
   const clear =
     $("#clearCart");
 
-  // BOTÓN HEADER
+  // HEADER
 
   cartButton?.addEventListener(
     "click",
@@ -556,7 +540,7 @@ function setupCart() {
     }
   );
 
-  // BOTÓN MOBILE
+  // MOBILE
 
   mobileCartButton?.addEventListener(
     "click",
@@ -778,18 +762,25 @@ function clearCart() {
 }
 
 // =========================================================
-// GUARDAR
+// GUARDAR CARRITO
 // =========================================================
 
 function saveCart() {
-  localStorage.setItem(
-    CART_KEY,
-    JSON.stringify(state.cart)
-  );
+  try {
+    localStorage.setItem(
+      CART_KEY,
+      JSON.stringify(state.cart)
+    );
+  } catch (error) {
+    console.error(
+      "Error guardando carrito:",
+      error
+    );
+  }
 }
 
 // =========================================================
-// ACTUALIZAR TODO EL CARRITO
+// ACTUALIZAR CARRITO
 // =========================================================
 
 function updateCartUI() {
@@ -886,7 +877,7 @@ function updateCartUI() {
 }
 
 // =========================================================
-// BOTONES DE PRODUCTOS DEL CARRITO
+// BOTONES DEL CARRITO
 // =========================================================
 
 function setupCartItemButtons() {
@@ -1018,7 +1009,7 @@ function cartItemHTML(item) {
 }
 
 // =========================================================
-// WHATSAPP
+// FINALIZAR POR WHATSAPP
 // =========================================================
 
 function checkoutWhatsApp() {
@@ -1128,6 +1119,13 @@ function formatPrice(value) {
     return "Consultar precio";
   }
 
+  const number =
+    Number(value);
+
+  if (Number.isNaN(number)) {
+    return "Consultar precio";
+  }
+
   return new Intl.NumberFormat(
     "es-AR",
     {
@@ -1135,7 +1133,7 @@ function formatPrice(value) {
       currency: "ARS",
       maximumFractionDigits: 0
     }
-  ).format(Number(value));
+  ).format(number);
 }
 
 // =========================================================
