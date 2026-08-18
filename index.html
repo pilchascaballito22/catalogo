@@ -1,194 +1,349 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Pilchas Caballito 22 — indumentaria urbana.">
-  <title>Pilchas Caballito 22</title>
+
+  <meta name="description"
+    content="Pilchas Caballito 22 — indumentaria urbana en Buenos Aires.">
+
+  <meta name="theme-color" content="#111111">
+
+  <title>PC22 · Pilchas Caballito 22</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  >
+    rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
+  <!-- =====================================================
+       TOAST
+  ====================================================== -->
+
   <div id="toast" class="toast"></div>
 
-  <!-- =========================
+
+  <!-- =====================================================
        HEADER
-  ========================== -->
+  ====================================================== -->
+
   <header class="site-header">
 
     <a
-      class="brand"
       href="#inicio"
+      class="brand"
       aria-label="Pilchas Caballito 22"
     >
-      <span class="brand-mark">
-        PC<span>22</span>
-      </span>
+      <span class="brand-main">PC</span>
+      <span class="brand-number">22</span>
     </a>
 
+
     <nav class="desktop-nav">
-      <a href="#inicio">Inicio</a>
-      <a href="#coleccion">Colección</a>
-      <a href="#nosotros">Nosotros</a>
-      <a href="#contacto">Contacto</a>
+
+      <a href="#inicio">
+        Inicio
+      </a>
+
+      <a href="#coleccion">
+        Colección
+      </a>
+
+      <a href="#nosotros">
+        Nosotros
+      </a>
+
+      <a href="#contacto">
+        Contacto
+      </a>
+
     </nav>
 
+
     <a
-      class="header-cta"
+      class="header-whatsapp"
       id="headerWhatsapp"
       href="#"
       target="_blank"
-      rel="noopener noreferrer"
+      rel="noopener"
     >
-      WhatsApp ↗
+      WhatsApp
+      <span>↗</span>
     </a>
+
 
     <button
       class="menu-btn"
       id="menuBtn"
-      aria-label="Abrir menú"
       type="button"
+      aria-label="Abrir menú"
+      aria-expanded="false"
     >
-      ☰
+      <span></span>
+      <span></span>
+      <span></span>
     </button>
 
   </header>
 
 
-  <!-- =========================
-       MENÚ MOBILE
-  ========================== -->
-  <div class="mobile-menu" id="mobileMenu">
+  <!-- =====================================================
+       MOBILE MENU
+  ====================================================== -->
 
-    <a href="#inicio">Inicio</a>
-    <a href="#coleccion">Colección</a>
-    <a href="#nosotros">Nosotros</a>
-    <a href="#contacto">Contacto</a>
+  <div
+    class="mobile-menu"
+    id="mobileMenu"
+  >
 
-    <a
-      id="mobileWhatsapp"
-      href="#"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      WhatsApp ↗
-    </a>
+    <div class="mobile-menu-inner">
+
+      <a href="#inicio">
+        Inicio
+      </a>
+
+      <a href="#coleccion">
+        Colección
+      </a>
+
+      <a href="#nosotros">
+        Nosotros
+      </a>
+
+      <a href="#contacto">
+        Contacto
+      </a>
+
+      <a
+        id="mobileWhatsapp"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        WhatsApp ↗
+      </a>
+
+    </div>
 
   </div>
 
 
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
   <main>
 
-    <!-- =========================
+
+    <!-- ===================================================
          HERO
-    ========================== -->
-    <section class="hero" id="inicio">
+    ==================================================== -->
 
-      <div class="hero-noise"></div>
+    <section
+      class="hero"
+      id="inicio"
+    >
 
-      <div class="hero-copy">
+      <div class="hero-grid">
 
-        <p class="eyebrow">
-          BUENOS AIRES · INDUMENTARIA
-        </p>
+        <div class="hero-copy">
 
-        <h1>
-          PILCHAS<br>
-          <em>CABALLITO</em><br>
-          <span>22</span>
-        </h1>
+          <div class="hero-topline">
+            <span>BUENOS AIRES</span>
+            <span>PC22 / 2026</span>
+          </div>
 
-        <p class="hero-sub">
-          Tu próxima pilcha empieza acá.
-          Descubrí la colección y consultá por WhatsApp.
-        </p>
 
-        <div class="hero-actions">
+          <div class="hero-title">
 
-          <a
-            class="btn btn-green"
-            href="#coleccion"
-          >
-            Explorar colección
-          </a>
+            <p class="hero-small">
+              TU ESTILO.
+            </p>
 
-          <a
-            class="btn btn-outline"
-            id="heroInstagram"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Instagram ↗
-          </a>
+            <h1>
+              TU<br>
+              <span>CALLE.</span>
+            </h1>
+
+          </div>
+
+
+          <p class="hero-description">
+            Indumentaria urbana para los que
+            hacen su propio camino.
+          </p>
+
+
+          <div class="hero-actions">
+
+            <a
+              href="#coleccion"
+              class="btn btn-green"
+            >
+              Ver colección
+              <span>↗</span>
+            </a>
+
+            <a
+              href="#nosotros"
+              class="btn btn-outline"
+            >
+              Conocé PC22
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <div class="hero-visual">
+
+          <div class="hero-visual-top">
+            <span>DROP</span>
+            <span>001</span>
+          </div>
+
+
+          <div class="hero-image-wrap">
+
+            <div class="hero-image-placeholder">
+              <div class="hero-placeholder-logo">
+                PC<span>22</span>
+              </div>
+
+              <p>
+                PILCHAS<br>
+                CABALLITO
+              </p>
+            </div>
+
+          </div>
+
+
+          <div class="hero-visual-bottom">
+
+            <span>
+              STREETWEAR
+            </span>
+
+            <span>
+              SCROLL ↓
+            </span>
+
+          </div>
 
         </div>
 
       </div>
 
-      <div class="hero-side">
-        <span>PC22</span>
-        <span>SCROLL ↓</span>
+
+      <div class="hero-bottom-line">
+
+        <span>
+          PILCHAS CABALLITO 22
+        </span>
+
+        <span>
+          INDUMENTARIA URBANA
+        </span>
+
+        <span>
+          BUENOS AIRES
+        </span>
+
       </div>
 
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          TICKER
-    ========================== -->
-    <section
-      class="ticker"
-      aria-label="Información"
-    >
-      <div>STREETWEAR</div>
-      <div>PC22</div>
-      <div>BUENOS AIRES</div>
-      <div>INDUMENTARIA</div>
-      <div>STREETWEAR</div>
+    ==================================================== -->
+
+    <section class="ticker">
+
+      <div class="ticker-track">
+
+        <span>STREETWEAR</span>
+        <i>✦</i>
+
+        <span>PC22</span>
+        <i>✦</i>
+
+        <span>BUENOS AIRES</span>
+        <i>✦</i>
+
+        <span>PILCHAS</span>
+        <i>✦</i>
+
+        <span>STREETWEAR</span>
+        <i>✦</i>
+
+        <span>PC22</span>
+        <i>✦</i>
+
+        <span>BUENOS AIRES</span>
+        <i>✦</i>
+
+        <span>PILCHAS</span>
+        <i>✦</i>
+
+      </div>
+
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          COLECCIÓN
-    ========================== -->
+    ==================================================== -->
+
     <section
       class="collection section"
       id="coleccion"
     >
 
-      <div class="section-top">
+      <div class="section-heading">
 
         <div>
 
-          <p class="eyebrow">
+          <p class="section-number">
             01 / COLECCIÓN
           </p>
 
           <h2>
-            EL DROP.
+            EL<br>
+            <span>DROP.</span>
           </h2>
 
         </div>
 
-        <p class="section-note">
-          Elegí una categoría o mirá todo el catálogo.
-        </p>
+
+        <div class="section-intro">
+
+          <p>
+            Prendas seleccionadas para
+            llevar tu estilo a otro nivel.
+          </p>
+
+          <span>
+            NUEVOS INGRESOS
+          </span>
+
+        </div>
 
       </div>
 
 
       <!-- FILTROS -->
+
       <div
         class="filters"
         id="filters"
@@ -206,12 +361,14 @@
 
 
       <!-- PRODUCTOS -->
+
       <div
         class="product-grid"
         id="productGrid"
       >
 
         <div class="loading">
+          <span></span>
           Cargando colección...
         </div>
 
@@ -222,56 +379,69 @@
         class="empty hidden"
         id="emptyProducts"
       >
-        Todavía no hay productos publicados.
+        <span>PC22</span>
+        <p>
+          Todavía no hay productos publicados.
+        </p>
       </div>
 
     </section>
 
 
-    <!-- =========================
-         NOSOTROS
-    ========================== -->
+    <!-- ===================================================
+         FRASE / MARCA
+    ==================================================== -->
+
     <section
-      class="manifesto section"
+      class="statement"
       id="nosotros"
     >
 
-      <div class="manifesto-big">
-        NO SE TRATA<br>
-        DE SEGUIR<br>
-        <span>EL ESTILO.</span>
-      </div>
+      <div class="statement-inner">
 
-      <div class="manifesto-small">
-
-        <p class="eyebrow">
+        <p class="section-number">
           02 / NOSOTROS
         </p>
 
-        <p>
-          Se trata de encontrar el tuyo.
-          Pilchas Caballito 22 nace para juntar prendas,
-          actitud y calle en un solo lugar.
-        </p>
+        <h2>
+          NO VENDEMOS<br>
+          <span>TENDENCIAS.</span>
+        </h2>
+
+        <div class="statement-bottom">
+
+          <p class="statement-big">
+            VENDEMOS<br>
+            <strong>TU PILCHA.</strong>
+          </p>
+
+          <p class="statement-text">
+            Pilchas Caballito 22 nace para
+            juntar prendas, actitud y calle
+            en un solo lugar.
+          </p>
+
+        </div>
 
       </div>
 
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          CONTACTO
-    ========================== -->
+    ==================================================== -->
+
     <section
       class="contact section"
       id="contacto"
     >
 
-      <div class="contact-card">
+      <div class="contact-inner">
 
-        <div>
+        <div class="contact-heading">
 
-          <p class="eyebrow">
+          <p class="section-number">
             03 / CONTACTO
           </p>
 
@@ -280,35 +450,43 @@
             <span>ALGO?</span>
           </h2>
 
-          <p>
-            Mandanos un mensaje y consultá disponibilidad,
-            talles y formas de entrega.
-          </p>
-
         </div>
 
 
-        <div class="contact-actions">
+        <div class="contact-content">
 
-          <a
-            class="btn btn-green btn-large"
-            id="contactWhatsapp"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Hablar por WhatsApp ↗
-          </a>
+          <p>
+            ¿Encontraste una pilcha que te gusta?
+            Consultá disponibilidad, talles,
+            precios y formas de entrega.
+          </p>
 
-          <a
-            class="btn btn-outline btn-large"
-            id="contactInstagram"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ver Instagram ↗
-          </a>
+
+          <div class="contact-actions">
+
+            <a
+              class="btn btn-green btn-large"
+              id="contactWhatsapp"
+              href="#"
+              target="_blank"
+              rel="noopener"
+            >
+              Hablar por WhatsApp
+              <span>↗</span>
+            </a>
+
+            <a
+              class="btn btn-outline btn-large"
+              id="contactInstagram"
+              href="#"
+              target="_blank"
+              rel="noopener"
+            >
+              Instagram
+              <span>↗</span>
+            </a>
+
+          </div>
 
         </div>
 
@@ -319,29 +497,77 @@
   </main>
 
 
-  <!-- =========================
+  <!-- =====================================================
        FOOTER
-  ========================== -->
-  <footer>
+  ====================================================== -->
 
-    <div class="footer-brand">
-      PC<span>22</span>
+  <footer class="site-footer">
+
+    <div class="footer-top">
+
+      <div class="footer-logo">
+        <span>PC</span>
+        <strong>22</strong>
+      </div>
+
+
+      <div class="footer-links">
+
+        <a href="#inicio">
+          Inicio
+        </a>
+
+        <a href="#coleccion">
+          Colección
+        </a>
+
+        <a href="#nosotros">
+          Nosotros
+        </a>
+
+        <a href="#contacto">
+          Contacto
+        </a>
+
+      </div>
+
+
+      <a
+        class="footer-instagram"
+        id="footerInstagram"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        Instagram ↗
+      </a>
+
     </div>
 
-    <p>
-      © 2026 Pilchas Caballito 22
-    </p>
 
-    <a href="admin/">
-      ADMIN
-    </a>
+    <div class="footer-bottom">
+
+      <p>
+        © 2026 Pilchas Caballito 22
+      </p>
+
+      <span>
+        BUENOS AIRES · ARGENTINA
+      </span>
+
+      <a href="admin/">
+        ADMIN
+      </a>
+
+    </div>
 
   </footer>
 
 
-  <!-- =========================
-       MODAL PRODUCTO
-  ========================== -->
+  <!-- =====================================================
+       PRODUCT MODAL
+  ====================================================== -->
+
   <div
     class="modal hidden"
     id="productModal"
@@ -357,8 +583,8 @@
 
       <button
         class="modal-close"
-        data-close-modal
         type="button"
+        data-close-modal
         aria-label="Cerrar"
       >
         ×
@@ -367,11 +593,16 @@
 
       <div class="modal-gallery">
 
-        <img
-          id="modalImage"
-          src=""
-          alt=""
-        >
+        <div class="modal-image-wrap">
+
+          <img
+            id="modalImage"
+            src=""
+            alt=""
+          >
+
+        </div>
+
 
         <div
           id="modalThumbs"
@@ -384,13 +615,11 @@
       <div class="modal-info">
 
         <p
-          class="eyebrow"
+          class="modal-category"
           id="modalCategory"
         ></p>
 
-        <h2
-          id="modalName"
-        ></h2>
+        <h2 id="modalName"></h2>
 
         <p
           class="modal-price"
@@ -398,22 +627,26 @@
         ></p>
 
         <p
+          class="modal-description"
           id="modalDescription"
         ></p>
+
 
         <div
           class="sizes"
           id="modalSizes"
         ></div>
 
+
         <a
           class="btn btn-green btn-large"
           id="modalWhatsapp"
           href="#"
           target="_blank"
-          rel="noopener noreferrer"
+          rel="noopener"
         >
-          Consultar por WhatsApp ↗
+          Consultar por WhatsApp
+          <span>↗</span>
         </a>
 
       </div>
@@ -423,26 +656,15 @@
   </div>
 
 
-  <!-- ==================================================
-       CONFIGURACIÓN SUPABASE
-       ================================================== -->
+  <!-- =====================================================
+       SCRIPT
+  ====================================================== -->
 
-  <script>
-    window.SUPABASE_CONFIG = {
-      url: "https://xwwtuyzczslykpkunysc.supabase.co",
-      apiUrl: "https://xwwtuyzczslykpkunysc.supabase.co/rest/v1",
-      anonKey: "sb_publishable_NW_VyLNGAFVFNN-WZJGbpw_D0-rl45Q"
-    };
-  </script>
-
-
-  <!-- =========================
-       JAVASCRIPT PRINCIPAL
-  ========================== -->
   <script
     type="module"
     src="js/app.js"
   ></script>
 
 </body>
+
 </html>
