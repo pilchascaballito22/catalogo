@@ -1,25 +1,32 @@
 import { supabase } from "./supabase.js";
 import { STORE } from "./config.js";
 
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => [...document.querySelectorAll(s)];
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const WHATSAPP_NUMBER = "5491130786998";
+const INSTAGRAM_URL = "https://www.instagram.com/pilchas_caballito22/";
+const CART_KEY = "pc22_cart";
 
 const state = {
   products: [],
   category: "Todos",
-  cart: JSON.parse(localStorage.getItem("pc22_cart") || "[]")
+  cart: JSON.parse(localStorage.getItem(CART_KEY) || "[]")
 };
+
 
 // =========================================================
 // INICIO
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", async () => {
+
   setupLinks();
   setupMenu();
   setupModal();
-  setupCart();
 
+  createCartHTML();
+  setupCart();
   updateCartUI();
 
   if (!supabase) {
@@ -32,18 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 // =========================================================
-// DATOS DE CONTACTO
-// =========================================================
-
-const INSTAGRAM_URL =
-  "https://www.instagram.com/pilchas_caballito22/";
-
-const WHATSAPP_NUMBER =
-  "5491130786998";
-
-
-// =========================================================
-// LINKS DE CONTACTO
+// LINKS
 // =========================================================
 
 function setupLinks() {
@@ -51,37 +47,39 @@ function setupLinks() {
   const whatsappURL =
     `https://wa.me/${WHATSAPP_NUMBER}`;
 
-  // WhatsApp
+  const whatsappMessage =
+    "Hola! Quería consultar por Pilchas Caballito 22.";
+
   [
     "headerWhatsapp",
     "mobileWhatsapp",
     "contactWhatsapp"
   ].forEach((id) => {
 
-    const el = document.getElementById(id);
+    const element = document.getElementById(id);
 
-    if (!el) return;
+    if (!element) return;
 
-    el.href =
-      `${whatsappURL}?text=${encodeURIComponent(
-        "Hola! Quería consultar por Pilchas Caballito 22."
-      )}`;
+    element.href =
+      `${whatsappURL}?text=${encodeURIComponent(whatsappMessage)}`;
+
   });
 
 
-  // Instagram
   [
     "contactInstagram",
     "footerInstagram",
     "heroInstagram"
   ].forEach((id) => {
 
-    const el = document.getElementById(id);
+    const element = document.getElementById(id);
 
-    if (!el) return;
+    if (!element) return;
 
-    el.href = INSTAGRAM_URL;
+    element.href = INSTAGRAM_URL;
+
   });
+
 }
 
 
@@ -105,12 +103,13 @@ function setupMenu() {
       "aria-expanded",
       isOpen ? "true" : "false"
     );
+
   });
 
 
-  $$("#mobileMenu a").forEach((a) => {
+  $$("#mobileMenu a").forEach((link) => {
 
-    a.addEventListener("click", () => {
+    link.addEventListener("click", () => {
 
       menu.classList.remove("open");
 
@@ -118,13 +117,16 @@ function setupMenu() {
         "aria-expanded",
         "false"
       );
+
     });
+
   });
+
 }
 
 
 // =========================================================
-// SUPABASE — CARGAR PRODUCTOS
+// PRODUCTOS
 // =========================================================
 
 async function loadProducts() {
@@ -153,11 +155,11 @@ async function loadProducts() {
   }
 
 
-  state.products =
-    data || [];
+  state.products = data || [];
 
   renderFilters();
   renderProducts();
+
 }
 
 
@@ -167,11 +169,11 @@ async function loadProducts() {
 
 function renderFilters() {
 
-  const cats = [
+  const categories = [
     "Todos",
     ...new Set(
       state.products
-        .map((p) => p.category)
+        .map((product) => product.category)
         .filter(Boolean)
     )
   ];
@@ -183,35 +185,39 @@ function renderFilters() {
 
 
   box.innerHTML =
-    cats.map((category) => `
+    categories
+      .map((category) => `
 
-      <button
-        class="filter ${
-          category === state.category
-            ? "active"
-            : ""
-        }"
-        data-category="${escapeAttr(category)}"
-        type="button"
-      >
-        ${escapeHtml(category)}
-      </button>
+        <button
+          class="filter ${
+            category === state.category
+              ? "active"
+              : ""
+          }"
+          data-category="${escapeAttr(category)}"
+          type="button"
+        >
+          ${escapeHtml(category)}
+        </button>
 
-    `).join("");
+      `)
+      .join("");
 
 
-  $$(".filter").forEach((btn) => {
+  $$(".filter").forEach((button) => {
 
-    btn.addEventListener("click", () => {
+    button.addEventListener("click", () => {
 
       state.category =
-        btn.dataset.category;
+        button.dataset.category;
 
       renderFilters();
       renderProducts();
 
     });
+
   });
+
 }
 
 
@@ -221,61 +227,56 @@ function renderFilters() {
 
 function renderProducts() {
 
-  const grid =
-    $("#productGrid");
-
-  const empty =
-    $("#emptyProducts");
+  const grid = $("#productGrid");
+  const empty = $("#emptyProducts");
 
   if (!grid || !empty) return;
 
 
-  const list =
+  const products =
     state.category === "Todos"
       ? state.products
       : state.products.filter(
-          (p) =>
-            p.category ===
-            state.category
+          (product) =>
+            product.category === state.category
         );
 
 
-  if (!list.length) {
+  if (!products.length) {
 
     grid.innerHTML = "";
 
-    empty.classList.remove(
-      "hidden"
-    );
+    empty.classList.remove("hidden");
 
     return;
+
   }
 
 
-  empty.classList.add(
-    "hidden"
-  );
+  empty.classList.add("hidden");
 
 
   grid.innerHTML =
-    list.map(productCard).join("");
+    products
+      .map(productCard)
+      .join("");
 
 
   $$(".product-card").forEach((card) => {
 
-    card.addEventListener(
-      "click",
-      () => openProduct(
-        card.dataset.id
-      )
-    );
+    card.addEventListener("click", () => {
+
+      openProduct(card.dataset.id);
+
+    });
 
   });
+
 }
 
 
 // =========================================================
-// TARJETA DE PRODUCTO
+// TARJETA PRODUCTO
 // =========================================================
 
 function productCard(product) {
@@ -308,6 +309,7 @@ function productCard(product) {
               </div>
             `
         }
+
 
         ${
           product.featured
@@ -346,6 +348,7 @@ function productCard(product) {
     </article>
 
   `;
+
 }
 
 
@@ -357,9 +360,8 @@ function openProduct(id) {
 
   const product =
     state.products.find(
-      (p) =>
-        String(p.id) ===
-        String(id)
+      (item) =>
+        String(item.id) === String(id)
     );
 
 
@@ -367,8 +369,7 @@ function openProduct(id) {
 
 
   $("#modalCategory").textContent =
-    product.category ||
-    "INDUMENTARIA";
+    product.category || "INDUMENTARIA";
 
 
   $("#modalName").textContent =
@@ -396,11 +397,8 @@ function openProduct(id) {
       .join("");
 
 
-  const mainImage =
-    $("#modalImage");
-
-  const images =
-    product.images || [];
+  const mainImage = $("#modalImage");
+  const images = product.images || [];
 
 
   if (mainImage) {
@@ -410,11 +408,11 @@ function openProduct(id) {
 
     mainImage.alt =
       product.name;
+
   }
 
 
-  const thumbs =
-    $("#modalThumbs");
+  const thumbs = $("#modalThumbs");
 
 
   if (thumbs) {
@@ -438,44 +436,41 @@ function openProduct(id) {
         .join("");
 
 
-    $$("#modalThumbs img").forEach(
-      (thumb) => {
+    $$("#modalThumbs img").forEach((thumb) => {
 
-        thumb.addEventListener(
-          "click",
-          () => {
+      thumb.addEventListener("click", () => {
 
-            if (mainImage) {
-              mainImage.src =
-                thumb.dataset.src;
-            }
+        if (mainImage) {
 
+          mainImage.src =
+            thumb.dataset.src;
 
-            $$("#modalThumbs img")
-              .forEach((img) =>
-                img.classList.remove(
-                  "selected"
-                )
-              );
+        }
 
 
-            thumb.classList.add(
-              "selected"
-            );
+        $$("#modalThumbs img")
+          .forEach((image) => {
 
-          }
-        );
+            image.classList.remove("selected");
 
-      }
-    );
+          });
+
+
+        thumb.classList.add("selected");
+
+      });
+
+    });
+
   }
 
 
-  // WhatsApp del producto
+  // =======================================================
+  // WHATSAPP DEL PRODUCTO
+  // =======================================================
 
-  const message =
+  const productMessage =
     `Hola! Quería consultar por "${product.name}".`;
-
 
   const modalWhatsapp =
     $("#modalWhatsapp");
@@ -485,12 +480,15 @@ function openProduct(id) {
 
     modalWhatsapp.href =
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        message
+        productMessage
       )}`;
+
   }
 
 
-  // Agregar al carrito desde el modal
+  // =======================================================
+  // BOTÓN ÚNICO DE CARRITO
+  // =======================================================
 
   addCartButtonToModal(product);
 
@@ -502,11 +500,12 @@ function openProduct(id) {
 
   document.body.style.overflow =
     "hidden";
+
 }
 
 
 // =========================================================
-// BOTÓN AGREGAR AL CARRITO EN MODAL
+// BOTÓN CARRITO DEL MODAL
 // =========================================================
 
 function addCartButtonToModal(product) {
@@ -517,42 +516,57 @@ function addCartButtonToModal(product) {
   if (!modalInfo) return;
 
 
-  let button =
-    document.getElementById(
-      "addToCartBtn"
-    );
+  // -------------------------------------------------------
+  // BORRAR TODOS LOS BOTONES DE CARRITO ANTERIORES
+  // -------------------------------------------------------
+
+  modalInfo
+    .querySelectorAll(
+      "#addToCartBtn, .modal-add-cart"
+    )
+    .forEach((button) => {
+
+      button.remove();
+
+    });
 
 
-  if (!button) {
+  // -------------------------------------------------------
+  // CREAR UN SOLO BOTÓN
+  // -------------------------------------------------------
 
-    button =
-      document.createElement("button");
+  const button =
+    document.createElement("button");
 
-    button.id =
-      "addToCartBtn";
+  button.id =
+    "addToCartBtn";
 
-    button.className =
-      "btn btn-outline btn-large";
-
-    modalInfo.appendChild(button);
-  }
-
+  button.className =
+    "btn btn-green btn-large modal-add-cart";
 
   button.type =
     "button";
 
   button.textContent =
-    "Agregar al carrito +";
+    "AGREGAR AL CARRITO +";
 
 
-  button.onclick = (event) => {
+  button.addEventListener("click", (event) => {
 
     event.preventDefault();
     event.stopPropagation();
 
     addToCart(product);
 
-  };
+  });
+
+
+  // -------------------------------------------------------
+  // PONER EL BOTÓN AL FINAL DEL MODAL
+  // -------------------------------------------------------
+
+  modalInfo.appendChild(button);
+
 }
 
 
@@ -573,16 +587,18 @@ function setupModal() {
     });
 
 
-  document.addEventListener(
-    "keydown",
-    (event) => {
+  document.addEventListener("keydown", (event) => {
 
-      if (event.key === "Escape") {
-        closeModal();
-      }
+    if (event.key === "Escape") {
+
+      closeModal();
+
+      closeCart();
 
     }
-  );
+
+  });
+
 }
 
 
@@ -594,80 +610,21 @@ function closeModal() {
   if (!modal) return;
 
 
-  modal.classList.add(
-    "hidden"
-  );
+  modal.classList.add("hidden");
 
+  document.body.style.overflow = "";
 
-  document.body.style.overflow =
-    "";
 }
 
 
 // =========================================================
-// CARRITO
-// =========================================================
-
-function setupCart() {
-
-  createCartHTML();
-
-  const cartButton =
-    $("#cartButton");
-
-  const cartClose =
-    $("#cartClose");
-
-  const cartOverlay =
-    $("#cartOverlay");
-
-
-  cartButton?.addEventListener(
-    "click",
-    openCart
-  );
-
-
-  cartClose?.addEventListener(
-    "click",
-    closeCart
-  );
-
-
-  cartOverlay?.addEventListener(
-    "click",
-    closeCart
-  );
-
-
-  document.addEventListener(
-    "keydown",
-    (event) => {
-
-      if (
-        event.key === "Escape"
-      ) {
-        closeCart();
-      }
-
-    }
-  );
-}
-
-
-// =========================================================
-// CREAR HTML DEL CARRITO
+// CARRITO — CREAR HTML
 // =========================================================
 
 function createCartHTML() {
 
-  if (
-    document.getElementById(
-      "cartContainer"
-    )
-  ) {
-    return;
-  }
+  // Evita duplicarlo
+  if ($("#cartContainer")) return;
 
 
   const cartHTML = `
@@ -678,6 +635,7 @@ function createCartHTML() {
       type="button"
       aria-label="Abrir carrito"
     >
+
       <span class="cart-icon">
         🛒
       </span>
@@ -689,6 +647,7 @@ function createCartHTML() {
       <strong id="cartCount">
         0
       </strong>
+
     </button>
 
 
@@ -711,6 +670,7 @@ function createCartHTML() {
         <div class="cart-header">
 
           <div>
+
             <p class="cart-label">
               PC22 / SHOP
             </p>
@@ -718,6 +678,7 @@ function createCartHTML() {
             <h2>
               Tu carrito.
             </h2>
+
           </div>
 
 
@@ -743,6 +704,7 @@ function createCartHTML() {
           id="cartEmpty"
           class="cart-empty"
         >
+
           <strong>
             TU CARRITO ESTÁ VACÍO
           </strong>
@@ -750,6 +712,7 @@ function createCartHTML() {
           <p>
             Agregá productos de la colección.
           </p>
+
         </div>
 
 
@@ -764,9 +727,7 @@ function createCartHTML() {
               TOTAL
             </span>
 
-            <strong
-              id="cartTotal"
-            >
+            <strong id="cartTotal">
               $0
             </strong>
 
@@ -778,7 +739,7 @@ function createCartHTML() {
             class="btn btn-green btn-large cart-checkout"
             type="button"
           >
-            Finalizar por WhatsApp ↗
+            FINALIZAR POR WHATSAPP ↗
           </button>
 
 
@@ -795,6 +756,7 @@ function createCartHTML() {
       </aside>
 
     </div>
+
   `;
 
 
@@ -803,24 +765,65 @@ function createCartHTML() {
     cartHTML
   );
 
-
-  $("#checkoutWhatsapp")
-    ?.addEventListener(
-      "click",
-      checkoutWhatsApp
-    );
-
-
-  $("#clearCart")
-    ?.addEventListener(
-      "click",
-      clearCart
-    );
 }
 
 
 // =========================================================
-// AGREGAR PRODUCTO AL CARRITO
+// CONFIGURAR CARRITO
+// =========================================================
+
+function setupCart() {
+
+  const cartButton =
+    $("#cartButton");
+
+  const cartClose =
+    $("#cartClose");
+
+  const cartOverlay =
+    $("#cartOverlay");
+
+  const checkout =
+    $("#checkoutWhatsapp");
+
+  const clear =
+    $("#clearCart");
+
+
+  cartButton?.addEventListener(
+    "click",
+    openCart
+  );
+
+
+  cartClose?.addEventListener(
+    "click",
+    closeCart
+  );
+
+
+  cartOverlay?.addEventListener(
+    "click",
+    closeCart
+  );
+
+
+  checkout?.addEventListener(
+    "click",
+    checkoutWhatsApp
+  );
+
+
+  clear?.addEventListener(
+    "click",
+    clearCart
+  );
+
+}
+
+
+// =========================================================
+// AGREGAR AL CARRITO
 // =========================================================
 
 function addToCart(product) {
@@ -855,7 +858,9 @@ function addToCart(product) {
 
       quantity:
         1
+
     });
+
   }
 
 
@@ -865,6 +870,7 @@ function addToCart(product) {
   showToast(
     `${product.name} agregado al carrito.`
   );
+
 }
 
 
@@ -896,16 +902,18 @@ function changeQuantity(id, amount) {
           String(product.id) !==
           String(id)
       );
+
   }
 
 
   saveCart();
   updateCartUI();
+
 }
 
 
 // =========================================================
-// ELIMINAR PRODUCTO
+// ELIMINAR
 // =========================================================
 
 function removeFromCart(id) {
@@ -920,11 +928,12 @@ function removeFromCart(id) {
 
   saveCart();
   updateCartUI();
+
 }
 
 
 // =========================================================
-// VACIAR CARRITO
+// VACIAR
 // =========================================================
 
 function clearCart() {
@@ -940,21 +949,21 @@ function clearCart() {
   showToast(
     "Carrito vacío."
   );
+
 }
 
 
 // =========================================================
-// GUARDAR CARRITO
+// GUARDAR
 // =========================================================
 
 function saveCart() {
 
   localStorage.setItem(
-    "pc22_cart",
-    JSON.stringify(
-      state.cart
-    )
+    CART_KEY,
+    JSON.stringify(state.cart)
   );
+
 }
 
 
@@ -983,8 +992,7 @@ function updateCartUI() {
   const totalQuantity =
     state.cart.reduce(
       (total, item) =>
-        total +
-        item.quantity,
+        total + Number(item.quantity || 0),
       0
     );
 
@@ -993,8 +1001,8 @@ function updateCartUI() {
     state.cart.reduce(
       (total, item) =>
         total +
-        item.price *
-        item.quantity,
+        Number(item.price || 0) *
+        Number(item.quantity || 0),
       0
     );
 
@@ -1003,15 +1011,15 @@ function updateCartUI() {
 
     count.textContent =
       totalQuantity;
+
   }
 
 
   if (totalElement) {
 
     totalElement.textContent =
-      formatPrice(
-        totalPrice
-      );
+      formatPrice(totalPrice);
+
   }
 
 
@@ -1020,28 +1028,20 @@ function updateCartUI() {
 
   if (!state.cart.length) {
 
-    itemsContainer.innerHTML =
-      "";
+    itemsContainer.innerHTML = "";
 
-    empty?.classList.remove(
-      "hidden"
-    );
+    empty?.classList.remove("hidden");
 
-    footer?.classList.add(
-      "hidden"
-    );
+    footer?.classList.add("hidden");
 
     return;
+
   }
 
 
-  empty?.classList.add(
-    "hidden"
-  );
+  empty?.classList.add("hidden");
 
-  footer?.classList.remove(
-    "hidden"
-  );
+  footer?.classList.remove("hidden");
 
 
   itemsContainer.innerHTML =
@@ -1050,74 +1050,65 @@ function updateCartUI() {
       .join("");
 
 
-  // Menos
+  // MENOS
 
-  $$(".cart-minus").forEach(
-    (button) => {
+  $$(".cart-minus").forEach((button) => {
 
-      button.addEventListener(
-        "click",
-        () => {
+    button.addEventListener("click", () => {
 
-          changeQuantity(
-            button.dataset.id,
-            -1
-          );
-
-        }
+      changeQuantity(
+        button.dataset.id,
+        -1
       );
 
-    }
-  );
+    });
+
+  });
 
 
-  // Más
+  // MÁS
 
-  $$(".cart-plus").forEach(
-    (button) => {
+  $$(".cart-plus").forEach((button) => {
 
-      button.addEventListener(
-        "click",
-        () => {
+    button.addEventListener("click", () => {
 
-          changeQuantity(
-            button.dataset.id,
-            1
-          );
-
-        }
+      changeQuantity(
+        button.dataset.id,
+        1
       );
 
-    }
-  );
+    });
+
+  });
 
 
-  // Eliminar
+  // ELIMINAR
 
-  $$(".cart-remove").forEach(
-    (button) => {
+  $$(".cart-remove").forEach((button) => {
 
-      button.addEventListener(
-        "click",
-        () => {
+    button.addEventListener("click", () => {
 
-          removeFromCart(
-            button.dataset.id
-          );
-
-        }
+      removeFromCart(
+        button.dataset.id
       );
 
-    }
-  );
+    });
+
+  });
+
 }
 
 
 // =========================================================
-// HTML DE CADA PRODUCTO DEL CARRITO
+// PRODUCTO DEL CARRITO
 // =========================================================
 
 function cartItemHTML(item) {
+
+  const subtotal =
+    Number(item.price || 0) *
+    Number(item.quantity || 0);
+
 
   return `
 
@@ -1153,7 +1144,7 @@ function cartItemHTML(item) {
         </h3>
 
         <p>
-          ${formatPrice(item.price)}
+          ${formatPrice(subtotal)}
         </p>
 
 
@@ -1199,6 +1190,7 @@ function cartItemHTML(item) {
     </div>
 
   `;
+
 }
 
 
@@ -1214,12 +1206,20 @@ function openCart() {
   if (!container) return;
 
 
+  // Si el modal de producto está abierto,
+  // lo cerramos primero.
+
+  closeModal();
+
+
   container.classList.remove(
     "hidden"
   );
 
+
   document.body.style.overflow =
     "hidden";
+
 }
 
 
@@ -1239,13 +1239,15 @@ function closeCart() {
     "hidden"
   );
 
+
   document.body.style.overflow =
     "";
+
 }
 
 
 // =========================================================
-// FINALIZAR PEDIDO POR WHATSAPP
+// FINALIZAR POR WHATSAPP
 // =========================================================
 
 function checkoutWhatsApp() {
@@ -1257,42 +1259,51 @@ function checkoutWhatsApp() {
     );
 
     return;
+
   }
 
 
   const lines =
-    state.cart.map(
-      (item) => {
+    state.cart.map((item) => {
 
-        const subtotal =
-          item.price *
-          item.quantity;
+      const subtotal =
+        Number(item.price || 0) *
+        Number(item.quantity || 0);
 
-        return (
-          `• ${item.name} x${item.quantity} — ${formatPrice(subtotal)}`
-        );
-      }
-    );
+
+      return (
+        `• ${item.name} x${item.quantity} — ${formatPrice(subtotal)}`
+      );
+
+    });
 
 
   const total =
     state.cart.reduce(
       (sum, item) =>
         sum +
-        item.price *
-        item.quantity,
+        Number(item.price || 0) *
+        Number(item.quantity || 0),
       0
     );
 
 
   const message = [
+
     "Hola! Quiero hacer un pedido en Pilchas Caballito 22.",
+
     "",
+
     ...lines,
+
     "",
+
     `TOTAL: ${formatPrice(total)}`,
+
     "",
+
     "¿Me confirman disponibilidad y cómo coordinamos la entrega?"
+
   ].join("\n");
 
 
@@ -1305,8 +1316,9 @@ function checkoutWhatsApp() {
   window.open(
     url,
     "_blank",
-    "noopener"
+    "noopener,noreferrer"
   );
+
 }
 
 
@@ -1320,79 +1332,38 @@ function showDemo() {
 
     {
       id: "demo1",
-
-      name:
-        "Remera Oversize",
-
-      category:
-        "Remeras",
-
-      price:
-        35000,
-
+      name: "Remera Oversize",
+      category: "Remeras",
+      price: 35000,
       description:
-        "Producto de ejemplo. Configurá Supabase para administrar el catálogo.",
-
-      sizes:
-        ["S", "M", "L", "XL"],
-
-      images:
-        [],
-
-      featured:
-        true
+        "Producto de ejemplo.",
+      sizes: ["S", "M", "L", "XL"],
+      images: [],
+      featured: true
     },
-
 
     {
       id: "demo2",
-
-      name:
-        "Buzo PC22",
-
-      category:
-        "Buzos",
-
-      price:
-        55000,
-
+      name: "Buzo PC22",
+      category: "Buzos",
+      price: 55000,
       description:
         "Producto de ejemplo.",
-
-      sizes:
-        ["M", "L", "XL"],
-
-      images:
-        [],
-
-      featured:
-        false
+      sizes: ["M", "L", "XL"],
+      images: [],
+      featured: false
     },
-
 
     {
       id: "demo3",
-
-      name:
-        "Campera Urbana",
-
-      category:
-        "Camperas",
-
-      price:
-        80000,
-
+      name: "Campera Urbana",
+      category: "Camperas",
+      price: 80000,
       description:
         "Producto de ejemplo.",
-
-      sizes:
-        ["S", "M", "L"],
-
-      images:
-        [],
-
-      featured:
-        false
+      sizes: ["S", "M", "L"],
+      images: [],
+      featured: false
     }
 
   ];
@@ -1400,11 +1371,12 @@ function showDemo() {
 
   renderFilters();
   renderProducts();
+
 }
 
 
 // =========================================================
-// FORMATO DE PRECIO ARGENTINO
+// PRECIO
 // =========================================================
 
 function formatPrice(value) {
@@ -1416,29 +1388,26 @@ function formatPrice(value) {
   ) {
 
     return "Consultar precio";
+
   }
 
 
   return new Intl.NumberFormat(
     "es-AR",
     {
-      style:
-        "currency",
-
-      currency:
-        "ARS",
-
-      maximumFractionDigits:
-        0
+      style: "currency",
+      currency: "ARS",
+      maximumFractionDigits: 0
     }
   ).format(
     Number(value)
   );
+
 }
 
 
 // =========================================================
-// SEGURIDAD HTML
+// SEGURIDAD
 // =========================================================
 
 function escapeHtml(value = "") {
@@ -1458,12 +1427,14 @@ function escapeHtml(value = "") {
 
       }
     );
+
 }
 
 
 function escapeAttr(value = "") {
 
   return escapeHtml(value);
+
 }
 
 
@@ -1488,14 +1459,12 @@ function showToast(message) {
   );
 
 
-  setTimeout(
-    () => {
+  setTimeout(() => {
 
-      toast.classList.remove(
-        "show"
-      );
+    toast.classList.remove(
+      "show"
+    );
 
-    },
-    2500
-  );
+  }, 2500);
+
 }
