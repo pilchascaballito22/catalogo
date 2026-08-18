@@ -5,125 +5,444 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Pilchas Caballito 22 — indumentaria urbana.">
   <title>Pilchas Caballito 22</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
+
   <div id="toast" class="toast"></div>
 
+  <!-- =========================
+       HEADER
+  ========================== -->
   <header class="site-header">
-    <a class="brand" href="#inicio" aria-label="Pilchas Caballito 22">
-      <span class="brand-mark">PC<span>22</span></span>
+
+    <a
+      class="brand"
+      href="#inicio"
+      aria-label="Pilchas Caballito 22"
+    >
+      <span class="brand-mark">
+        PC<span>22</span>
+      </span>
     </a>
+
     <nav class="desktop-nav">
       <a href="#inicio">Inicio</a>
       <a href="#coleccion">Colección</a>
       <a href="#nosotros">Nosotros</a>
       <a href="#contacto">Contacto</a>
     </nav>
-    <a class="header-cta" id="headerWhatsapp" href="#" target="_blank" rel="noopener">WhatsApp ↗</a>
-    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
+
+    <a
+      class="header-cta"
+      id="headerWhatsapp"
+      href="#"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      WhatsApp ↗
+    </a>
+
+    <button
+      class="menu-btn"
+      id="menuBtn"
+      aria-label="Abrir menú"
+      type="button"
+    >
+      ☰
+    </button>
+
   </header>
 
+
+  <!-- =========================
+       MENÚ MOBILE
+  ========================== -->
   <div class="mobile-menu" id="mobileMenu">
+
     <a href="#inicio">Inicio</a>
     <a href="#coleccion">Colección</a>
     <a href="#nosotros">Nosotros</a>
     <a href="#contacto">Contacto</a>
-    <a id="mobileWhatsapp" href="#" target="_blank" rel="noopener">WhatsApp ↗</a>
+
+    <a
+      id="mobileWhatsapp"
+      href="#"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      WhatsApp ↗
+    </a>
+
   </div>
 
+
   <main>
+
+    <!-- =========================
+         HERO
+    ========================== -->
     <section class="hero" id="inicio">
+
       <div class="hero-noise"></div>
+
       <div class="hero-copy">
-        <p class="eyebrow">BUENOS AIRES · INDUMENTARIA</p>
-        <h1>PILCHAS<br><em>CABALLITO</em><br><span>22</span></h1>
-        <p class="hero-sub">Tu próxima pilcha empieza acá. Descubrí la colección y consultá por WhatsApp.</p>
+
+        <p class="eyebrow">
+          BUENOS AIRES · INDUMENTARIA
+        </p>
+
+        <h1>
+          PILCHAS<br>
+          <em>CABALLITO</em><br>
+          <span>22</span>
+        </h1>
+
+        <p class="hero-sub">
+          Tu próxima pilcha empieza acá.
+          Descubrí la colección y consultá por WhatsApp.
+        </p>
+
         <div class="hero-actions">
-          <a class="btn btn-green" href="#coleccion">Explorar colección</a>
-          <a class="btn btn-outline" id="heroInstagram" href="#" target="_blank" rel="noopener">Instagram ↗</a>
+
+          <a
+            class="btn btn-green"
+            href="#coleccion"
+          >
+            Explorar colección
+          </a>
+
+          <a
+            class="btn btn-outline"
+            id="heroInstagram"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Instagram ↗
+          </a>
+
         </div>
+
       </div>
+
       <div class="hero-side">
         <span>PC22</span>
         <span>SCROLL ↓</span>
       </div>
+
     </section>
 
-    <section class="ticker" aria-label="Información">
-      <div>STREETWEAR</div><div>PC22</div><div>BUENOS AIRES</div><div>INDUMENTARIA</div><div>STREETWEAR</div>
+
+    <!-- =========================
+         TICKER
+    ========================== -->
+    <section
+      class="ticker"
+      aria-label="Información"
+    >
+      <div>STREETWEAR</div>
+      <div>PC22</div>
+      <div>BUENOS AIRES</div>
+      <div>INDUMENTARIA</div>
+      <div>STREETWEAR</div>
     </section>
 
-    <section class="collection section" id="coleccion">
+
+    <!-- =========================
+         COLECCIÓN
+    ========================== -->
+    <section
+      class="collection section"
+      id="coleccion"
+    >
+
       <div class="section-top">
+
         <div>
-          <p class="eyebrow">01 / COLECCIÓN</p>
-          <h2>EL DROP.</h2>
+
+          <p class="eyebrow">
+            01 / COLECCIÓN
+          </p>
+
+          <h2>
+            EL DROP.
+          </h2>
+
         </div>
-        <p class="section-note">Elegí una categoría o mirá todo el catálogo.</p>
+
+        <p class="section-note">
+          Elegí una categoría o mirá todo el catálogo.
+        </p>
+
       </div>
 
-      <div class="filters" id="filters">
-        <button class="filter active" data-category="Todos">Todos</button>
+
+      <!-- FILTROS -->
+      <div
+        class="filters"
+        id="filters"
+      >
+
+        <button
+          class="filter active"
+          data-category="Todos"
+          type="button"
+        >
+          Todos
+        </button>
+
       </div>
 
-      <div class="product-grid" id="productGrid">
-        <div class="loading">Cargando colección...</div>
+
+      <!-- PRODUCTOS -->
+      <div
+        class="product-grid"
+        id="productGrid"
+      >
+
+        <div class="loading">
+          Cargando colección...
+        </div>
+
       </div>
-      <div class="empty hidden" id="emptyProducts">Todavía no hay productos publicados.</div>
+
+
+      <div
+        class="empty hidden"
+        id="emptyProducts"
+      >
+        Todavía no hay productos publicados.
+      </div>
+
     </section>
 
-    <section class="manifesto section" id="nosotros">
-      <div class="manifesto-big">NO SE TRATA<br>DE SEGUIR<br><span>EL ESTILO.</span></div>
+
+    <!-- =========================
+         NOSOTROS
+    ========================== -->
+    <section
+      class="manifesto section"
+      id="nosotros"
+    >
+
+      <div class="manifesto-big">
+        NO SE TRATA<br>
+        DE SEGUIR<br>
+        <span>EL ESTILO.</span>
+      </div>
+
       <div class="manifesto-small">
-        <p class="eyebrow">02 / NOSOTROS</p>
-        <p>Se trata de encontrar el tuyo. Pilchas Caballito 22 nace para juntar prendas, actitud y calle en un solo lugar.</p>
+
+        <p class="eyebrow">
+          02 / NOSOTROS
+        </p>
+
+        <p>
+          Se trata de encontrar el tuyo.
+          Pilchas Caballito 22 nace para juntar prendas,
+          actitud y calle en un solo lugar.
+        </p>
+
       </div>
+
     </section>
 
-    <section class="contact section" id="contacto">
+
+    <!-- =========================
+         CONTACTO
+    ========================== -->
+    <section
+      class="contact section"
+      id="contacto"
+    >
+
       <div class="contact-card">
+
         <div>
-          <p class="eyebrow">03 / CONTACTO</p>
-          <h2>¿VISTE<br><span>ALGO?</span></h2>
-          <p>Mandanos un mensaje y consultá disponibilidad, talles y formas de entrega.</p>
+
+          <p class="eyebrow">
+            03 / CONTACTO
+          </p>
+
+          <h2>
+            ¿VISTE<br>
+            <span>ALGO?</span>
+          </h2>
+
+          <p>
+            Mandanos un mensaje y consultá disponibilidad,
+            talles y formas de entrega.
+          </p>
+
         </div>
+
+
         <div class="contact-actions">
-          <a class="btn btn-green btn-large" id="contactWhatsapp" href="#" target="_blank" rel="noopener">Hablar por WhatsApp ↗</a>
-          <a class="btn btn-outline btn-large" id="contactInstagram" href="#" target="_blank" rel="noopener">Ver Instagram ↗</a>
+
+          <a
+            class="btn btn-green btn-large"
+            id="contactWhatsapp"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Hablar por WhatsApp ↗
+          </a>
+
+          <a
+            class="btn btn-outline btn-large"
+            id="contactInstagram"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver Instagram ↗
+          </a>
+
         </div>
+
       </div>
+
     </section>
+
   </main>
 
+
+  <!-- =========================
+       FOOTER
+  ========================== -->
   <footer>
-    <div class="footer-brand">PC<span>22</span></div>
-    <p>© 2026 Pilchas Caballito 22</p>
-    <a href="admin/">ADMIN</a>
+
+    <div class="footer-brand">
+      PC<span>22</span>
+    </div>
+
+    <p>
+      © 2026 Pilchas Caballito 22
+    </p>
+
+    <a href="admin/">
+      ADMIN
+    </a>
+
   </footer>
 
-  <div class="modal hidden" id="productModal">
-    <div class="modal-backdrop" data-close-modal></div>
+
+  <!-- =========================
+       MODAL PRODUCTO
+  ========================== -->
+  <div
+    class="modal hidden"
+    id="productModal"
+  >
+
+    <div
+      class="modal-backdrop"
+      data-close-modal
+    ></div>
+
+
     <div class="product-modal">
-      <button class="modal-close" data-close-modal>×</button>
+
+      <button
+        class="modal-close"
+        data-close-modal
+        type="button"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+
+
       <div class="modal-gallery">
-        <img id="modalImage" src="" alt="">
-        <div id="modalThumbs" class="modal-thumbs"></div>
+
+        <img
+          id="modalImage"
+          src=""
+          alt=""
+        >
+
+        <div
+          id="modalThumbs"
+          class="modal-thumbs"
+        ></div>
+
       </div>
+
+
       <div class="modal-info">
-        <p class="eyebrow" id="modalCategory"></p>
-        <h2 id="modalName"></h2>
-        <p class="modal-price" id="modalPrice"></p>
-        <p id="modalDescription"></p>
-        <div class="sizes" id="modalSizes"></div>
-        <a class="btn btn-green btn-large" id="modalWhatsapp" href="#" target="_blank" rel="noopener">Consultar por WhatsApp ↗</a>
+
+        <p
+          class="eyebrow"
+          id="modalCategory"
+        ></p>
+
+        <h2
+          id="modalName"
+        ></h2>
+
+        <p
+          class="modal-price"
+          id="modalPrice"
+        ></p>
+
+        <p
+          id="modalDescription"
+        ></p>
+
+        <div
+          class="sizes"
+          id="modalSizes"
+        ></div>
+
+        <a
+          class="btn btn-green btn-large"
+          id="modalWhatsapp"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Consultar por WhatsApp ↗
+        </a>
+
       </div>
+
     </div>
+
   </div>
 
-  <script type="module" src="js/app.js"></script>
+
+  <!-- ==================================================
+       CONFIGURACIÓN SUPABASE
+       ================================================== -->
+
+  <script>
+    window.SUPABASE_CONFIG = {
+      url: "https://xwwtuyzczslykpkunysc.supabase.co",
+      apiUrl: "https://xwwtuyzczslykpkunysc.supabase.co/rest/v1",
+      anonKey: "sb_publishable_NW_VyLNGAFVFNN-WZJGbpw_D0-rl45Q"
+    };
+  </script>
+
+
+  <!-- =========================
+       JAVASCRIPT PRINCIPAL
+  ========================== -->
+  <script
+    type="module"
+    src="js/app.js"
+  ></script>
+
 </body>
 </html>
