@@ -5,41 +5,55 @@ const $ = (selector) => document.querySelector(selector);
 const state = {
   products: [],
   editingId: null,
-  existingImages: [],
-  removedImages: []
+  existingImages: []
 };
 
+/* =========================================================
+   INICIO
+========================================================= */
+
 document.addEventListener("DOMContentLoaded", async () => {
-  if (!supabase || !supabaseReady) {
+  setupEvents();
+
+  if (!supabase) {
     const error = $("#loginError");
 
     if (error) {
       error.textContent =
-        "No se pudo conectar con Supabase. Revisá js/config.js.";
+        "Configurá correctamente Supabase en js/supabase.js.";
     }
 
     return;
   }
 
-  setupEvents();
+  try {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
 
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
-
-  if (session) {
-    showApp();
-  } else {
-    showAuth();
-  }
-
-  supabase.auth.onAuthStateChange((_event, session) => {
     if (session) {
-      showApp();
+      await showApp();
     } else {
       showAuth();
     }
-  });
+
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        await showApp();
+      } else {
+        showAuth();
+      }
+    });
+  } catch (error) {
+    console.error(error);
+
+    const loginError = $("#loginError");
+
+    if (loginError) {
+      loginError.textContent =
+        "No se pudo conectar con el sistema.";
+    }
+  }
 });
 
 
@@ -48,57 +62,73 @@ document.addEventListener("DOMContentLoaded", async () => {
 ========================================================= */
 
 function setupEvents() {
+
+  // Login
   $("#loginForm")?.addEventListener("submit", login);
 
+  // Logout
   $("#logoutBtn")?.addEventListener("click", async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error(error);
+    }
   });
 
+  // Nuevo producto
   $("#newProductBtn")?.addEventListener("click", () => {
     openEditor();
   });
 
+  // Guardar producto
   $("#productForm")?.addEventListener("submit", saveProduct);
 
+  // Fotos
   $("#productImages")?.addEventListener("change", previewNewFiles);
 
+  // Buscar
   $("#searchProducts")?.addEventListener("input", renderProducts);
 
-  document.addEventListener("click", async (event) => {
+  /*
+    IMPORTANTE:
+    El HTML tiene type="number" para el precio.
+    Si el usuario escribe 178.900, el navegador puede
+    considerarlo inválido.
 
-    const closeButton = event.target.closest("[data-close-editor]");
-    if (closeButton) {
+    Acá lo convertimos automáticamente a 178900.
+  */
+  $("#productPrice")?.addEventListener("input", (e) => {
+
+    let value = e.target.value;
+
+    // Dejar solamente números
+    value = value.replace(/[^\d]/g, "");
+
+    e.target.value = value;
+  });
+
+  // Clicks generales
+  document.addEventListener("click", (e) => {
+
+    // Cerrar modal
+    if (e.target.matches("[data-close-editor]")) {
       closeEditor();
       return;
     }
 
-    const editButton = event.target.closest("[data-edit]");
+    // Editar
+    const editButton = e.target.closest("[data-edit]");
+
     if (editButton) {
       openEditor(editButton.dataset.edit);
       return;
     }
 
-    const deleteButton = event.target.closest("[data-delete]");
+    // Eliminar
+    const deleteButton = e.target.closest("[data-delete]");
+
     if (deleteButton) {
-      await deleteProduct(deleteButton.dataset.delete);
-      return;
-    }
-
-    const toggleButton = event.target.closest("[data-toggle-active]");
-    if (toggleButton) {
-      await toggleProductActive(toggleButton.dataset.toggleActive);
-      return;
-    }
-
-    const featuredButton = event.target.closest("[data-toggle-featured]");
-    if (featuredButton) {
-      await toggleProductFeatured(featuredButton.dataset.toggleFeatured);
-      return;
-    }
-
-    const removeImageButton = event.target.closest("[data-remove-image]");
-    if (removeImageButton) {
-      removeExistingImage(Number(removeImageButton.dataset.removeImage));
+      deleteProduct(deleteButton.dataset.delete);
       return;
     }
   });
@@ -109,20 +139,30 @@ function setupEvents() {
    LOGIN
 ========================================================= */
 
-async function login(event) {
-  event.preventDefault();
+async function login(e) {
 
-  $("#loginError").textContent = "";
+  e.preventDefault();
 
-  const email = $("#email").value.trim();
-  const password = $("#password").value;
+  const errorElement = $("#loginError");
+
+  if (errorElement) {
+    errorElement.textContent = "";
+  }
+
+  const email = $("#email")?.value.trim();
+  const password = $("#password")?.value;
 
   if (!email || !password) {
-    $("#loginError").textContent = "Completá email y contraseña.";
+
+    if (errorElement) {
+      errorElement.textContent =
+        "Completá email y contraseña.";
+    }
+
     return;
   }
 
-  const button = event.submitter || $("#loginForm button");
+  const button = e.submitter;
 
   if (button) {
     button.disabled = true;
@@ -130,18 +170,28 @@ async function login(event) {
   }
 
   try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
     if (error) {
-      $("#loginError").textContent = error.message;
+      throw error;
     }
+
   } catch (error) {
+
     console.error(error);
-    $("#loginError").textContent = "No se pudo iniciar sesión.";
+
+    if (errorElement) {
+      errorElement.textContent =
+        traducirErrorLogin(error);
+    }
+
   } finally {
+
     if (button) {
       button.disabled = false;
       button.textContent = "Ingresar →";
@@ -151,42 +201,92 @@ async function login(event) {
 
 
 /* =========================================================
-   VISTAS
+   ERRORES DE LOGIN
 ========================================================= */
 
-async function showApp() {
-  $("#authView").classList.add("hidden");
-  $("#appView").classList.remove("hidden");
+function traducirErrorLogin(error) {
 
-  await loadProducts();
-}
+  const message = String(error?.message || "").toLowerCase();
 
-function showAuth() {
-  $("#authView").classList.remove("hidden");
-  $("#appView").classList.add("hidden");
+  if (
+    message.includes("invalid login credentials") ||
+    message.includes("invalid credentials")
+  ) {
+    return "Email o contraseña incorrectos.";
+  }
+
+  if (message.includes("email not confirmed")) {
+    return "Tenés que confirmar el email de la cuenta.";
+  }
+
+  if (message.includes("too many requests")) {
+    return "Demasiados intentos. Esperá unos minutos.";
+  }
+
+  return error?.message || "No se pudo iniciar sesión.";
 }
 
 
 /* =========================================================
-   PRODUCTOS
+   MOSTRAR APP
+========================================================= */
+
+async function showApp() {
+
+  $("#authView")?.classList.add("hidden");
+  $("#appView")?.classList.remove("hidden");
+
+  await loadProducts();
+}
+
+
+/* =========================================================
+   MOSTRAR LOGIN
+========================================================= */
+
+function showAuth() {
+
+  $("#authView")?.classList.remove("hidden");
+  $("#appView")?.classList.add("hidden");
+}
+
+
+/* =========================================================
+   CARGAR PRODUCTOS
 ========================================================= */
 
 async function loadProducts() {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
 
-  if (error) {
+  try {
+
+    const {
+      data,
+      error
+    } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    state.products = data || [];
+
+    updateStats();
+    renderProducts();
+
+  } catch (error) {
+
     console.error(error);
-    toast(error.message || "No se pudieron cargar los productos.");
-    return;
+
+    toast(
+      error?.message ||
+      "No se pudieron cargar los productos."
+    );
   }
-
-  state.products = data || [];
-
-  updateStats();
-  renderProducts();
 }
 
 
@@ -195,6 +295,7 @@ async function loadProducts() {
 ========================================================= */
 
 function updateStats() {
+
   const total = state.products.length;
 
   const active = state.products.filter(
@@ -205,24 +306,36 @@ function updateStats() {
     (product) => product.featured
   ).length;
 
-  $("#totalProducts").textContent = total;
-  $("#activeProducts").textContent = active;
-  $("#featuredProducts").textContent = featured;
+  if ($("#totalProducts")) {
+    $("#totalProducts").textContent = total;
+  }
+
+  if ($("#activeProducts")) {
+    $("#activeProducts").textContent = active;
+  }
+
+  if ($("#featuredProducts")) {
+    $("#featuredProducts").textContent = featured;
+  }
 }
 
 
 /* =========================================================
-   RENDER ADMIN
+   MOSTRAR PRODUCTOS
 ========================================================= */
 
 function renderProducts() {
+
   const searchInput = $("#searchProducts");
 
-  const query = (searchInput?.value || "")
+  const query = (
+    searchInput?.value || ""
+  )
     .toLowerCase()
     .trim();
 
   const list = state.products.filter((product) => {
+
     const text = `
       ${product.name || ""}
       ${product.category || ""}
@@ -234,9 +347,12 @@ function renderProducts() {
 
   const container = $("#adminProducts");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   if (!list.length) {
+
     container.innerHTML = `
       <div class="loading">
         No hay productos.
@@ -253,23 +369,20 @@ function renderProducts() {
 
 
 /* =========================================================
-   TARJETA DE PRODUCTO
+   CARD ADMIN
 ========================================================= */
 
 function adminCard(product) {
-  const image = product.images?.[0] || "";
 
-  const activeText = product.active
-    ? "Publicado"
-    : "Oculto";
+  const image =
+    Array.isArray(product.images)
+      ? product.images[0] || ""
+      : "";
 
-  const featuredText = product.featured
-    ? "★ Destacado"
-    : "☆ Normal";
-
-  const toggleText = product.active
-    ? "Ocultar"
-    : "Publicar";
+  const status =
+    product.active
+      ? "· publicado"
+      : "· oculto";
 
   return `
     <article class="admin-product">
@@ -277,13 +390,12 @@ function adminCard(product) {
       <div class="admin-product-image">
         ${
           image
-            ? `<img src="${escapeAttr(image)}" alt="${escapeAttr(product.name || "")}" loading="lazy">`
-            : `<span>Sin foto</span>`
-        }
-
-        ${
-          product.featured
-            ? `<span class="product-badge">★</span>`
+            ? `
+              <img
+                src="${escapeAttr(image)}"
+                alt="${escapeAttr(product.name || "")}"
+              >
+            `
             : ""
         }
       </div>
@@ -291,9 +403,10 @@ function adminCard(product) {
       <div class="admin-product-data">
 
         <small>
-          ${escapeHtml(product.category || "Indumentaria")}
-          ·
-          ${escapeHtml(activeText)}
+          ${escapeHtml(
+            product.category || "Indumentaria"
+          )}
+          ${status}
         </small>
 
         <h3>
@@ -304,39 +417,21 @@ function adminCard(product) {
           ${formatPrice(product.price)}
         </p>
 
-        <div class="admin-product-meta">
-          <span class="${product.active ? "status-active" : "status-hidden"}">
-            ${escapeHtml(activeText)}
-          </span>
-
-          <span class="${product.featured ? "status-featured" : ""}">
-            ${escapeHtml(featuredText)}
-          </span>
-        </div>
-
         <div class="admin-product-actions">
 
           <button
             class="small-btn"
-            data-edit="${escapeAttr(product.id)}">
+            type="button"
+            data-edit="${escapeAttr(product.id)}"
+          >
             Editar
           </button>
 
           <button
-            class="small-btn"
-            data-toggle-active="${escapeAttr(product.id)}">
-            ${toggleText}
-          </button>
-
-          <button
-            class="small-btn"
-            data-toggle-featured="${escapeAttr(product.id)}">
-            ${product.featured ? "Quitar ★" : "Destacar"}
-          </button>
-
-          <button
             class="small-btn delete"
-            data-delete="${escapeAttr(product.id)}">
+            type="button"
+            data-delete="${escapeAttr(product.id)}"
+          >
             Eliminar
           </button>
 
@@ -350,15 +445,19 @@ function adminCard(product) {
 
 
 /* =========================================================
-   EDITOR
+   ABRIR EDITOR
 ========================================================= */
 
 function openEditor(id = null) {
+
   state.editingId = id;
   state.existingImages = [];
-  state.removedImages = [];
 
-  $("#productForm").reset();
+  const form = $("#productForm");
+
+  if (form) {
+    form.reset();
+  }
 
   $("#productId").value = "";
   $("#previewImages").innerHTML = "";
@@ -366,18 +465,20 @@ function openEditor(id = null) {
   $("#formError").textContent = "";
 
   if (id) {
+
     const product = state.products.find(
       (item) => String(item.id) === String(id)
     );
 
     if (!product) {
-      toast("Producto no encontrado.");
       return;
     }
 
-    $("#editorTitle").textContent = "Editar producto.";
+    $("#editorTitle").textContent =
+      "Editar producto.";
 
-    $("#productId").value = product.id;
+    $("#productId").value =
+      product.id;
 
     $("#productName").value =
       product.name || "";
@@ -404,13 +505,14 @@ function openEditor(id = null) {
         ? [...product.images]
         : [];
 
-    renderPreviews();
+    renderPreviews(
+      state.existingImages
+    );
 
   } else {
+
     $("#editorTitle").textContent =
       "Nuevo producto.";
-
-    $("#productFeatured").value = "false";
   }
 
   $("#editorModal").classList.remove("hidden");
@@ -422,115 +524,73 @@ function openEditor(id = null) {
 ========================================================= */
 
 function closeEditor() {
-  $("#editorModal").classList.add("hidden");
+
+  $("#editorModal")?.classList.add("hidden");
 
   state.editingId = null;
   state.existingImages = [];
-  state.removedImages = [];
+
+  const fileInput = $("#productImages");
+
+  if (fileInput) {
+    fileInput.value = "";
+  }
 }
 
 
 /* =========================================================
-   PREVIEW FOTOS NUEVAS
+   PREVISUALIZAR FOTOS
 ========================================================= */
 
-function previewNewFiles(event) {
-  const files = [...event.target.files];
+function previewNewFiles(e) {
 
-  renderPreviews(files);
-}
+  const files = [
+    ...e.target.files
+  ];
 
+  const urls = files.map(
+    (file) =>
+      URL.createObjectURL(file)
+  );
 
-/* =========================================================
-   PREVIEW GENERAL
-========================================================= */
-
-function renderPreviews(newFiles = []) {
-  const container = $("#previewImages");
-
-  if (!container) return;
-
-  let html = "";
-
-  state.existingImages.forEach((url, index) => {
-    html += `
-      <div class="preview-image-item">
-
-        <img
-          src="${escapeAttr(url)}"
-          alt="Foto ${index + 1}"
-        >
-
-        <button
-          type="button"
-          class="preview-remove"
-          data-remove-image="${index}"
-          title="Eliminar foto">
-          ×
-        </button>
-
-      </div>
-    `;
-  });
-
-  newFiles.forEach((file) => {
-    const url = URL.createObjectURL(file);
-
-    html += `
-      <div class="preview-image-item">
-
-        <img
-          src="${escapeAttr(url)}"
-          alt="${escapeAttr(file.name)}"
-        >
-
-        <span class="preview-new">
-          NUEVA
-        </span>
-
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-
-  const total =
-    state.existingImages.length +
-    newFiles.length;
+  renderPreviews([
+    ...state.existingImages,
+    ...urls
+  ]);
 
   $("#photoCount").textContent =
-    `${total} ${total === 1 ? "foto" : "fotos"}`;
+    `${state.existingImages.length + files.length} fotos`;
 }
 
 
 /* =========================================================
-   QUITAR FOTO EXISTENTE
+   PREVIEWS
 ========================================================= */
 
-function removeExistingImage(index) {
-  if (
-    index < 0 ||
-    index >= state.existingImages.length
-  ) {
+function renderPreviews(urls = []) {
+
+  const container =
+    $("#previewImages");
+
+  if (!container) {
     return;
   }
 
-  const removed =
-    state.existingImages[index];
+  container.innerHTML = urls
+    .map(
+      (url) => `
+        <div>
+          <img
+            src="${escapeAttr(url)}"
+            alt=""
+          >
+        </div>
+      `
+    )
+    .join("");
 
-  if (removed) {
-    state.removedImages.push(removed);
-  }
-
-  state.existingImages.splice(index, 1);
-
-  const files = [
-    ...$("#productImages").files
-  ];
-
-  renderPreviews(files);
-
-  toast("Foto marcada para eliminar.");
+  $("#photoCount").textContent =
+    `${urls.length} fotos`;
 }
 
 
@@ -538,20 +598,30 @@ function removeExistingImage(index) {
    GUARDAR PRODUCTO
 ========================================================= */
 
-async function saveProduct(event) {
-  event.preventDefault();
+async function saveProduct(e) {
 
-  const button = $("#saveProductBtn");
+  e.preventDefault();
 
-  button.disabled = true;
-  button.textContent = "Guardando...";
+  const button =
+    $("#saveProductBtn");
 
-  $("#formError").textContent = "";
+  const errorElement =
+    $("#formError");
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Guardando...";
+  }
+
+  if (errorElement) {
+    errorElement.textContent = "";
+  }
 
   try {
-    const files = [
-      ...$("#productImages").files
-    ];
+
+    /* -----------------------------------------------------
+       DATOS
+    ----------------------------------------------------- */
 
     const name =
       $("#productName").value.trim();
@@ -559,20 +629,44 @@ async function saveProduct(event) {
     const category =
       $("#productCategory").value.trim();
 
-    const priceValue =
-      $("#productPrice").value.trim();
-
     const description =
       $("#productDescription").value.trim();
 
     const sizes =
-      $("#productSizes").value
+      $("#productSizes")
+        .value
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean);
 
-    const featured =
-      $("#productFeatured").value === "true";
+    /* -----------------------------------------------------
+       PRECIO
+    ----------------------------------------------------- */
+
+    let priceValue =
+      $("#productPrice").value.trim();
+
+    /*
+      Permite:
+      178900
+      178.900
+      178,900
+    */
+
+    priceValue =
+      priceValue.replace(/\./g, "");
+
+    priceValue =
+      priceValue.replace(/,/g, "");
+
+    const price =
+      priceValue !== ""
+        ? Number(priceValue)
+        : null;
+
+    /* -----------------------------------------------------
+       VALIDACIONES
+    ----------------------------------------------------- */
 
     if (!name) {
       throw new Error(
@@ -586,40 +680,35 @@ async function saveProduct(event) {
       );
     }
 
-    let price = null;
-
-    if (priceValue !== "") {
-      price = Number(priceValue);
-
-      if (!Number.isFinite(price)) {
-        throw new Error(
-          "El precio no es válido."
-        );
-      }
-
-      if (price < 0) {
-        throw new Error(
-          "El precio no puede ser negativo."
-        );
-      }
+    if (
+      price !== null &&
+      (
+        Number.isNaN(price) ||
+        price < 0
+      )
+    ) {
+      throw new Error(
+        "El precio no es válido."
+      );
     }
 
     /* -----------------------------------------------------
-       SUBIR NUEVAS FOTOS
+       FOTOS
     ----------------------------------------------------- */
+
+    const files =
+      $("#productImages")?.files
+        ? [...$("#productImages").files]
+        : [];
 
     const uploadedImages = [];
 
     for (const file of files) {
-      if (!file.type.startsWith("image/")) {
-        throw new Error(
-          `"${file.name}" no es una imagen válida.`
-        );
-      }
 
-      uploadedImages.push(
-        await uploadImage(file)
-      );
+      const url =
+        await uploadImage(file);
+
+      uploadedImages.push(url);
     }
 
     const images = [
@@ -628,73 +717,34 @@ async function saveProduct(event) {
     ];
 
     /* -----------------------------------------------------
-       NUEVO PRODUCTO
+       PAYLOAD
     ----------------------------------------------------- */
 
-    if (!state.editingId) {
+    const payload = {
 
-      const payload = {
-        name,
-        price,
-        category,
-        featured,
-        description,
-        sizes,
-        images,
-        active: true
-      };
+      name,
 
-      const {
-        error
-      } = await supabase
-        .from("products")
-        .insert(payload);
+      price,
 
-      if (error) {
-        throw error;
-      }
+      category,
 
-      toast("Producto publicado.");
+      featured:
+        $("#productFeatured").value === "true",
 
-    }
+      description,
+
+      sizes,
+
+      images,
+
+      active: true
+    };
 
     /* -----------------------------------------------------
-       EDITAR PRODUCTO
+       EDITAR
     ----------------------------------------------------- */
 
-    else {
-
-      const currentProduct =
-        state.products.find(
-          (product) =>
-            String(product.id) ===
-            String(state.editingId)
-        );
-
-      if (!currentProduct) {
-        throw new Error(
-          "No se encontró el producto."
-        );
-      }
-
-      /*
-       * IMPORTANTE:
-       * Conservamos active.
-       *
-       * Así, editar un producto oculto
-       * NO lo vuelve a publicar automáticamente.
-       */
-
-      const payload = {
-        name,
-        price,
-        category,
-        featured,
-        description,
-        sizes,
-        images,
-        active: !!currentProduct.active
-      };
+    if (state.editingId) {
 
       const {
         error
@@ -707,17 +757,31 @@ async function saveProduct(event) {
         throw error;
       }
 
-      /* ---------------------------------------------------
-         ELIMINAR FOTOS MARCADAS DEL STORAGE
-      --------------------------------------------------- */
+      toast(
+        "Producto actualizado."
+      );
 
-      if (state.removedImages.length) {
-        await deleteStorageImages(
-          state.removedImages
-        );
+    }
+
+    /* -----------------------------------------------------
+       CREAR
+    ----------------------------------------------------- */
+
+    else {
+
+      const {
+        error
+      } = await supabase
+        .from("products")
+        .insert(payload);
+
+      if (error) {
+        throw error;
       }
 
-      toast("Producto actualizado.");
+      toast(
+        "Producto publicado."
+      );
     }
 
     closeEditor();
@@ -726,20 +790,21 @@ async function saveProduct(event) {
 
   } catch (error) {
 
-    console.error(
-      "Error guardando producto:",
-      error
-    );
+    console.error(error);
 
-    $("#formError").textContent =
-      error?.message ||
-      "No se pudo guardar el producto.";
+    if (errorElement) {
+      errorElement.textContent =
+        error?.message ||
+        "No se pudo guardar el producto.";
+    }
 
   } finally {
 
-    button.disabled = false;
-    button.textContent =
-      "Guardar producto";
+    if (button) {
+      button.disabled = false;
+      button.textContent =
+        "Guardar producto";
+    }
   }
 }
 
@@ -749,30 +814,49 @@ async function saveProduct(event) {
 ========================================================= */
 
 async function uploadImage(file) {
-  const originalName =
-    file.name || "imagen";
+
+  if (!file) {
+    throw new Error(
+      "No se seleccionó ninguna imagen."
+    );
+  }
+
+  if (!file.type.startsWith("image/")) {
+    throw new Error(
+      "Solo podés subir imágenes."
+    );
+  }
+
+  /*
+    Nombre seguro
+  */
 
   const safeName =
-    originalName
+    file.name
       .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9._-]/g, "-");
+      .replace(
+        /[^a-z0-9._-]/g,
+        "-"
+      );
 
   const path =
     `${crypto.randomUUID()}-${safeName}`;
 
+  /*
+    Subir a Supabase Storage
+  */
+
   const {
     error
-  } = await supabase.storage
+  } = await supabase
+    .storage
     .from("product-images")
     .upload(
       path,
       file,
       {
         upsert: false,
-        contentType: file.type,
-        cacheControl: "3600"
+        contentType: file.type
       }
     );
 
@@ -780,181 +864,24 @@ async function uploadImage(file) {
     throw error;
   }
 
+  /*
+    Obtener URL pública
+  */
+
   const {
     data
-  } = supabase.storage
+  } = supabase
+    .storage
     .from("product-images")
     .getPublicUrl(path);
 
+  if (!data?.publicUrl) {
+    throw new Error(
+      "No se pudo obtener la URL de la imagen."
+    );
+  }
+
   return data.publicUrl;
-}
-
-
-/* =========================================================
-   ELIMINAR FOTOS DEL STORAGE
-========================================================= */
-
-async function deleteStorageImages(urls) {
-  const paths = urls
-    .map(publicUrlToStoragePath)
-    .filter(Boolean);
-
-  if (!paths.length) {
-    return;
-  }
-
-  const {
-    error
-  } = await supabase.storage
-    .from("product-images")
-    .remove(paths);
-
-  if (error) {
-    console.warn(
-      "No se pudieron eliminar algunas imágenes:",
-      error
-    );
-
-    /*
-     * No interrumpimos la actualización del producto
-     * si falla solamente la limpieza del Storage.
-     */
-  }
-}
-
-
-/* =========================================================
-   CONVERTIR URL PÚBLICA → PATH STORAGE
-========================================================= */
-
-function publicUrlToStoragePath(url) {
-  if (!url) return null;
-
-  try {
-    const marker =
-      "/storage/v1/object/public/product-images/";
-
-    const index =
-      url.indexOf(marker);
-
-    if (index === -1) {
-      return null;
-    }
-
-    return decodeURIComponent(
-      url.substring(
-        index + marker.length
-      )
-    );
-
-  } catch (error) {
-    console.warn(
-      "No se pudo interpretar la URL:",
-      url
-    );
-
-    return null;
-  }
-}
-
-
-/* =========================================================
-   PUBLICAR / OCULTAR
-========================================================= */
-
-async function toggleProductActive(id) {
-  const product =
-    state.products.find(
-      (item) =>
-        String(item.id) === String(id)
-    );
-
-  if (!product) {
-    return;
-  }
-
-  const newValue =
-    !product.active;
-
-  const actionText =
-    newValue
-      ? "publicar"
-      : "ocultar";
-
-  const confirmed =
-    confirm(
-      `¿Querés ${actionText} "${product.name}"?`
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  const {
-    error
-  } = await supabase
-    .from("products")
-    .update({
-      active: newValue
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    toast(error.message);
-    return;
-  }
-
-  toast(
-    newValue
-      ? "Producto publicado."
-      : "Producto ocultado."
-  );
-
-  await loadProducts();
-}
-
-
-/* =========================================================
-   DESTACADO
-========================================================= */
-
-async function toggleProductFeatured(id) {
-  const product =
-    state.products.find(
-      (item) =>
-        String(item.id) === String(id)
-    );
-
-  if (!product) {
-    return;
-  }
-
-  const newValue =
-    !product.featured;
-
-  const {
-    error
-  } = await supabase
-    .from("products")
-    .update({
-      featured: newValue
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    toast(error.message);
-    return;
-  }
-
-  toast(
-    newValue
-      ? "Producto destacado."
-      : "Producto quitado de destacados."
-  );
-
-  await loadProducts();
 }
 
 
@@ -963,6 +890,7 @@ async function toggleProductFeatured(id) {
 ========================================================= */
 
 async function deleteProduct(id) {
+
   const product =
     state.products.find(
       (item) =>
@@ -975,8 +903,7 @@ async function deleteProduct(id) {
 
   const confirmed =
     confirm(
-      `¿Eliminar "${product.name}"?\n\n` +
-      `Esta acción eliminará el producto del catálogo.`
+      `¿Eliminar "${product.name}"?`
     );
 
   if (!confirmed) {
@@ -984,10 +911,6 @@ async function deleteProduct(id) {
   }
 
   try {
-
-    /* -----------------------------------------------------
-       ELIMINAR PRODUCTO DE LA BASE
-    ----------------------------------------------------- */
 
     const {
       error
@@ -1000,29 +923,15 @@ async function deleteProduct(id) {
       throw error;
     }
 
-    /* -----------------------------------------------------
-       ELIMINAR FOTOS DEL STORAGE
-    ----------------------------------------------------- */
-
-    if (
-      Array.isArray(product.images) &&
-      product.images.length
-    ) {
-      await deleteStorageImages(
-        product.images
-      );
-    }
-
-    toast("Producto eliminado.");
+    toast(
+      "Producto eliminado."
+    );
 
     await loadProducts();
 
   } catch (error) {
 
-    console.error(
-      "Error eliminando producto:",
-      error
-    );
+    console.error(error);
 
     toast(
       error?.message ||
@@ -1037,6 +946,7 @@ async function deleteProduct(id) {
 ========================================================= */
 
 function formatPrice(value) {
+
   if (
     value === null ||
     value === undefined ||
@@ -1048,7 +958,7 @@ function formatPrice(value) {
   const number =
     Number(value);
 
-  if (!Number.isFinite(number)) {
+  if (Number.isNaN(number)) {
     return "Consultar precio";
   }
 
@@ -1064,19 +974,20 @@ function formatPrice(value) {
 
 
 /* =========================================================
-   ESCAPAR HTML
+   SEGURIDAD HTML
 ========================================================= */
 
 function escapeHtml(value = "") {
+
   return String(value).replace(
     /[&<>"']/g,
-    (match) => ({
+    (character) => ({
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
       '"': "&quot;",
       "'": "&#039;"
-    }[match])
+    }[character])
   );
 }
 
@@ -1090,24 +1001,27 @@ function escapeAttr(value = "") {
    TOAST
 ========================================================= */
 
+let toastTimer = null;
+
 function toast(message) {
-  const element = $("#toast");
+
+  const element =
+    $("#toast");
 
   if (!element) {
     return;
   }
 
   element.textContent =
-    message || "";
+    message;
 
   element.classList.add("show");
 
-  clearTimeout(
-    toast.timer
-  );
+  clearTimeout(toastTimer);
 
-  toast.timer =
-    setTimeout(() => {
-      element.classList.remove("show");
-    }, 2500);
+  toastTimer = setTimeout(() => {
+
+    element.classList.remove("show");
+
+  }, 2500);
 }
