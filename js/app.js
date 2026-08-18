@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // =========================================================
-// CARGAR CARRITO GUARDADO
+// CARGAR CARRITO
 // =========================================================
 
 function loadCart() {
@@ -124,31 +124,40 @@ function setupMenu() {
 // =========================================================
 
 async function loadProducts() {
-  const {
-    data,
-    error
-  } = await supabase
-    .from("products")
-    .select("*")
-    .eq("active", true)
-    .order("created_at", {
-      ascending: false
-    });
+  try {
+    const {
+      data,
+      error
+    } = await supabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .order("created_at", {
+        ascending: false
+      });
 
-  if (error) {
-    console.error("Error cargando productos:", error);
+    if (error) {
+      console.error("Error cargando productos:", error);
+
+      showToast(
+        "No se pudo cargar el catálogo."
+      );
+
+      return;
+    }
+
+    state.products = data || [];
+
+    renderFilters();
+    renderProducts();
+
+  } catch (error) {
+    console.error("Error inesperado:", error);
 
     showToast(
-      "No se pudo cargar el catálogo."
+      "Ocurrió un error cargando los productos."
     );
-
-    return;
   }
-
-  state.products = data || [];
-
-  renderFilters();
-  renderProducts();
 }
 
 // =========================================================
@@ -225,9 +234,10 @@ function renderProducts() {
 
   empty.classList.add("hidden");
 
-  grid.innerHTML = products
-    .map(productCard)
-    .join("");
+  grid.innerHTML =
+    products
+      .map(productCard)
+      .join("");
 
   $$("#productGrid .product-card").forEach(
     (card) => {
@@ -244,7 +254,9 @@ function renderProducts() {
 
 function productCard(product) {
   const image =
-    product.images?.[0] || "";
+    Array.isArray(product.images)
+      ? product.images[0] || ""
+      : "";
 
   return `
     <article
@@ -292,7 +304,9 @@ function productCard(product) {
         </div>
 
         <h3 class="product-card-name">
-          ${escapeHtml(product.name)}
+          ${escapeHtml(
+            product.name || ""
+          )}
         </h3>
 
         <div class="product-card-price">
@@ -352,8 +366,13 @@ function openProduct(id) {
   }
 
   if (sizes) {
+    const productSizes =
+      Array.isArray(product.sizes)
+        ? product.sizes
+        : [];
+
     sizes.innerHTML =
-      (product.sizes || [])
+      productSizes
         .map(
           (size) => `
             <span>
@@ -498,7 +517,8 @@ function closeModal() {
       "aria-hidden"
     ) !== "false"
   ) {
-    document.body.style.overflow = "";
+    document.body.style.overflow =
+      "";
   }
 }
 
@@ -528,8 +548,6 @@ function setupCart() {
   const clear =
     $("#clearCart");
 
-  // HEADER
-
   cartButton?.addEventListener(
     "click",
     (event) => {
@@ -540,8 +558,6 @@ function setupCart() {
     }
   );
 
-  // MOBILE
-
   mobileCartButton?.addEventListener(
     "click",
     (event) => {
@@ -551,8 +567,6 @@ function setupCart() {
       openCart();
     }
   );
-
-  // CERRAR
 
   cartClose?.addEventListener(
     "click",
@@ -569,8 +583,6 @@ function setupCart() {
     closeCart
   );
 
-  // CONTINUAR COMPRANDO
-
   continueShopping?.addEventListener(
     "click",
     () => {
@@ -582,14 +594,10 @@ function setupCart() {
     }
   );
 
-  // WHATSAPP
-
   checkout?.addEventListener(
     "click",
     checkoutWhatsApp
   );
-
-  // VACIAR
 
   clear?.addEventListener(
     "click",
@@ -686,7 +694,9 @@ function addToCart(product) {
       price:
         Number(product.price) || 0,
       image:
-        product.images?.[0] || "",
+        Array.isArray(product.images)
+          ? product.images[0] || ""
+          : "",
       quantity: 1
     });
   }
@@ -819,21 +829,15 @@ function updateCartUI() {
       0
     );
 
-  // CONTADOR HEADER
-
   if (cartCount) {
     cartCount.textContent =
       totalQuantity;
   }
 
-  // CONTADOR MOBILE
-
   if (mobileCount) {
     mobileCount.textContent =
       totalQuantity;
   }
-
-  // TOTAL
 
   if (totalElement) {
     totalElement.textContent =
@@ -841,8 +845,6 @@ function updateCartUI() {
   }
 
   if (!content) return;
-
-  // CARRITO VACÍO
 
   if (!state.cart.length) {
     content.innerHTML = "";
@@ -857,8 +859,6 @@ function updateCartUI() {
 
     return;
   }
-
-  // CARRITO CON PRODUCTOS
 
   empty?.classList.add(
     "hidden"
